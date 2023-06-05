@@ -45,5 +45,11 @@ fun permutaciones(A: Array<Pair<Int, Int>>): Array<Pair<Int, Int>> {
 }
 
 fun combinarCiclos(A: Array<Pair<Int, Int>>, B: Array<Pair<Int, Int>>): Array<Pair<Int, Int>> {
-
+    when (A.size) {
+        0 -> return B
+    }
+    when (B.size) {
+        0 -> return A
+    }
+    var minG = 
 }
