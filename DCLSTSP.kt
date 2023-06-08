@@ -1,35 +1,71 @@
-// FUNCIONES NECESARIAS PARA EL ALGORITMO 2, LÍNEAS DE CÓDIGO 1 - 312
+// FUNCIONES NECESARIAS PARA EL ALGORITMO 2, LÍNEAS DE CÓDIGO 1 - 430
 
-/* Función: obtenerMaximoArreglo
- * Descripción: Recibe un arreglo A: Array<Double> y retorna un Double que corresponde al elemento máximo de dicho arreglo
- * Precondición: A.size >= 1
- * Postondición: (\forall int i: 0 <= i < A.size, \result >= A[i]) && (\exists int i; 0 <= i && i < A.size; \result == A[i])
+/* Función: obtenerMaximoCoordenadasX
+ * Descripción: Recibe un P: Array<Pair<Double,Double>> de coordenadas y retorna un Double que corresponde al elemento 
+ * máximo de las coordenadas X de dicho arreglo.
+ * Precondición: P.size >= 1
+ * Postondición: (\forall int i: 0 <= i < P.size, \result >= P[i].first) && (\exists int i; 0 <= i && i < P.size; \result == P[i].first)
  */ 
-fun obtenerMaximoArreglo(A: Array<Double>): Double {
-	var n = A.size
-	var maximo = A[0]
+fun obtenerMaximoCoordenadasX(P: Array<Pair<Double,Double>>): Double {
+	var n = P.size
+	var maximoX = P[0].first
 	for (i in 1 until n) {
-		if (A[i] > maximo) {
-			maximo = A[i]
+		if (P[i].first > maximoX) {
+			maximoX = P[i].first
 		}
 	}
-	return maximo
+	return maximoX
 }
 
-/* Función: obtenerMinimoArreglo
- * Descripción: Recibe un A: Array<Double> y retorna un Double que corresponde al elemento mínimo de dicho arreglo
- * Precondición: A.size >= 1
- * Postondición: (\forall int i: 0 <= i < A.size, \result <= A[i]) && (\exists int i; 0 <= i && i < A.size; \result == A[i])
+/* Función: obtenerMinimoCoordenadasX
+ * Descripción: Recibe un P: Array<Pair<Double,Double>> de coordenadas y retorna un Double que corresponde al elemento 
+ * mínimo de las coordenadas X de dicho arreglo.
+ * Precondición: P.size >= 1
+ * Postondición: (\forall int i: 0 <= i < P.size, \result <= P[i].first) && (\exists int i; 0 <= i && i < P.size; \result == P[i].first)
  */ 
-fun obtenerMinimoArreglo(A: Array<Double>): Double {
-	var n = A.size
-	var minimo = A[0]
+fun obtenerMinimoCoordenadasX(P: Array<Pair<Double,Double>>): Double {
+	var n = P.size
+	var minimoX = P[0].first
 	for (i in 1 until n) {
-		if (A[i] < minimo) {
-			minimo = A[i]
+		if (P[i].first < minimoX) {
+			minimoX = P[i].first
 		}
 	}
-	return minimo
+	return minimoX
+}
+
+/* Función: obtenerMaximoCoordenadasY
+ * Descripción: Recibe un P: Array<Pair<Double,Double>> de coordenadas y retorna un Double que corresponde al elemento 
+ * máximo de las coordenadas Y de dicho arreglo.
+ * Precondición: P.size >= 1
+ * Postondición: (\forall int i: 0 <= i < P.size, \result >= P[i].second) && (\exists int i; 0 <= i && i < P.size; \result == P[i].second)
+ */ 
+fun obtenerMaximoCoordenadasY(P: Array<Pair<Double,Double>>): Double {
+	var n = P.size
+	var maximoY = P[0].second
+	for (i in 1 until n) {
+		if (P[i].second > maximoY) {
+			maximoY = P[i].second
+		}
+	}
+	return maximoY
+}
+
+/* Función: obtenerMinimoCoordenadasY
+ * Descripción: Recibe un P: Array<Pair<Double,Double>> de coordenadas y retorna un Double que corresponde al elemento 
+ * mínimo de las coordenadas Y de dicho arreglo.
+ * Precondición: P.size >= 1
+ * Postondición: (\forall int i: 0 <= i < P.size, \result <= P[i].second) && (\exists int i; 0 <= i && i < P.size; \result == P[i].second)
+ */ 
+fun obtenerMinimoCoordenadasY(P: Array<Pair<Double,Double>>): Double {
+	var n = P.size
+	var minimoY = P[0].second
+	for (i in 1 until n) {
+		if (P[i].second < minimoY) {
+			minimoY = P[i].second
+		}
+	}
+	return minimoY
 }
 
 /* Función: obtenerRectangulo
@@ -40,18 +76,11 @@ fun obtenerMinimoArreglo(A: Array<Double>): Double {
  * Precondición: P.size >= 1
  * Postondición: (\forall int i: 0 <= i < P.size, \result[0].first <= P[i].first <= \result[2].first && \result[0].second <= P[i].second <= \result[2].second) 
  */ 
-fun obtenerRectangulo (P: Array<Pair<Double,Double>>): Array<Pair<Double,Double>> {
-	var n = P.size
-	var coordenadasX = Array(n, {0.0})
-	var coordenadasY = Array(n, {0.0})
-	for (i in 0 until n) {
-		coordenadasX[i] = P[i].first
-		coordenadasY[i] = P[i].second
-	}
-	var minimoX = obtenerMinimoArreglo(coordenadasX)
-	var maximoX = obtenerMaximoArreglo(coordenadasX)
-	var minimoY = obtenerMinimoArreglo(coordenadasY)
-	var maximoY = obtenerMaximoArreglo(coordenadasY)
+fun obtenerRectangulo(P: Array<Pair<Double,Double>>): Array<Pair<Double,Double>> {
+	var minimoX = obtenerMinimoCoordenadasX(P)
+	var maximoX = obtenerMaximoCoordenadasX(P)
+	var minimoY = obtenerMinimoCoordenadasY(P)
+	var maximoY = obtenerMaximoCoordenadasY(P)
 	var coordenadas00 = Pair(minimoX,minimoY)
 	var coordenadas10 = Pair(maximoX, minimoY)
 	var coordenadas01 = Pair(minimoX, maximoY)
@@ -236,10 +265,10 @@ fun obtenerPuntoDeCorte(P: Array<Pair<Double,Double>>, ejeDeCorte: String): Pair
 fun aplicarCorte(ejeDeCorte: String, puntoDeCorte: Pair<Double,Double>, rectangulo: Array<Pair<Double,Double>>): Pair<Array<Pair<Double,Double>>, Array<Pair<Double,Double>>> {
 	if (ejeDeCorte == "X" || ejeDeCorte == "x") {
 		var coordenadasIzq00 = rectangulo[0]
-		var coordenadasIzq10 = puntoDeCorte
+		var coordenadasIzq10 = Pair(puntoDeCorte.first,rectangulo[0].second)
 		var coordenadasIzq11 = Pair(puntoDeCorte.first, rectangulo[2].second)
 		var coordenadasIzq01 = rectangulo[3]
-		var coordenadasDer00 = puntoDeCorte
+		var coordenadasDer00 = Pair(puntoDeCorte.first,rectangulo[0].second)
 		var coordenadasDer10 = rectangulo[1]
 		var coordenadasDer11 = rectangulo[2]
 		var coordenadasDer01 = Pair(puntoDeCorte.first, rectangulo[2].second)
@@ -250,8 +279,8 @@ fun aplicarCorte(ejeDeCorte: String, puntoDeCorte: Pair<Double,Double>, rectangu
 		var coordenadasIzq00 = rectangulo[0]
 		var coordenadasIzq10 = rectangulo[1]
 		var coordenadasIzq11 = Pair(rectangulo[1].first, puntoDeCorte.second)
-		var coordenadasIzq01 = puntoDeCorte
-		var coordenadasDer00 = puntoDeCorte
+		var coordenadasIzq01 = Pair(rectangulo[3].first, puntoDeCorte.second)
+		var coordenadasDer00 = Pair(rectangulo[3].first, puntoDeCorte.second)
 		var coordenadasDer10 = Pair(rectangulo[1].first, puntoDeCorte.second)
 		var coordenadasDer11 = rectangulo[2]
 		var coordenadasDer01 = rectangulo[3]
@@ -261,35 +290,121 @@ fun aplicarCorte(ejeDeCorte: String, puntoDeCorte: Pair<Double,Double>, rectangu
 	}
 }
 
-/* Función: obtenerPuntosRectangulo
- * Descripción: Esta función recibe un arreglo P: Array<Pair<Double,Double>> de coordenadas y un 
- * rectangulo: Array<Pair<Double,Double>> con las coordenadas de un rectángulo, las cuales deben estar en el siguiente orden:
+/* Función: esElPrimerRectangulo
+ * Descripción: Recibe un P: Array<Pair<Double,Double>> de coordenadas y un rectangulo: Array<Pair<Double,Double>> 
+ * con las coordenadas de un rectángulo, las cuales deben estar en el siguiente orden:
  * esquina inferior izquierda, esquina inferior derecha, esquina superior derecha, esquina superior izquierda.
- * La función retorna un arreglo Array<Pair<Double,Double>> que contiene aquellos puntos de P que se encuentran dentro del 
- * rectángulo
+ * Esta función verifica si el rectángulo dado es el primer rectángulo que se obtiene luego de aplicar el corte al rectángulo
+ * que contiene a P (el primer rectángulo corresponde al izquierdo si el corte es vertical y al inferior si es horizontal)
  * Precondición: P.size >= 1
- * Postondición: 0 <= \result.size <= P.size
+ * Postondición: true || false
  */ 
-fun obtenerPuntosRectangulo(P: Array<Pair<Double,Double>>, rectangulo: Array<Pair<Double,Double>>): Array<Pair<Double,Double>>{
+fun esElPrimerRectangulo(P: Array<Pair<Double,Double>>, rectangulo: Array<Pair<Double,Double>>): Boolean {
+	var minimoX = obtenerMinimoCoordenadasX(P)
+	var minimoY = obtenerMinimoCoordenadasY(P)
+	var rec00 = Pair(minimoX, minimoY)
+	if (rec00 == rectangulo[0]) {
+		return true
+	} else {
+		return false
+	}
+}
+
+/* Función: obtenerPuntosPrimerRectangulo
+ * Descripción: Recibe un P: Array<Pair<Double,Double>> de coordenadas y un rectangulo: Array<Pair<Double,Double>> 
+ * con las coordenadas de un rectángulo, las cuales deben estar en el siguiente orden:
+ * esquina inferior izquierda, esquina inferior derecha, esquina superior derecha, esquina superior izquierda.
+ * Esta función retorna los valores de P que están contenidos en el rectángulo dado, en un Array<Pair<Double,Double>>. 
+ * Se incluyen aquellas ciudades de P que están sobre el lado correspondiente al corte 
+ * (dichas ciudades se asignan a la partición del primer rectángulo por diseño)
+ * Precondición: P.size >= 1
+ * Postondición: \result.size >= 0
+ */ 
+fun obtenerPuntosPrimerRectangulo(P: Array<Pair<Double,Double>>, rectangulo: Array<Pair<Double,Double>>): Array<Pair<Double,Double>> {
 	var n = P.size
 	var k = 0
 	var tmp = Array(n, {0})
 	for (i in 0 until n) {
 		if (rectangulo[0].first <= P[i].first && P[i].first <= rectangulo[2].first) {
-			if (rectangulo[0].second <= P[i].second && P[i].second <= rectangulo[2].second)
-			tmp[i] = 1
-			k = k+1 
+			if (rectangulo[0].second <= P[i].second && P[i].second <= rectangulo[2].second){
+				tmp[i] = 1
+				k = k + 1 
+			}	
 		}
 	}
 	var particion = Array(k, {Pair(0.0, 0.0)})
 	var j = 0
 	for (i in 0 until n) {
-		if(tmp[i] == 1) {
+		if (tmp[i] == 1) {
 			particion[j] = P[i]
 			j = j + 1
-		}
+		} 
 	}
 	return particion
+} 
+
+/* Función: obtenerPuntosSegundoRectangulo
+ * Descripción: Recibe un P: Array<Pair<Double,Double>> de coordenadas y un rectangulo: Array<Pair<Double,Double>> 
+ * con las coordenadas de un rectángulo, las cuales deben estar en el siguiente orden:
+ * esquina inferior izquierda, esquina inferior derecha, esquina superior derecha, esquina superior izquierda.
+ * Esta función retorna los valores de P que están contenidos en el rectángulo dado, en un Array<Pair<Double,Double>>. 
+ * No se incluyen aquellas ciudades de P que están sobre el lado correspondiente al corte 
+ * (dichas ciudades se asignan a la partición del primer rectángulo por diseño)
+ * Precondición: P.size >= 1
+ * Postondición: \result.size >= 0
+ */ 
+fun obtenerPuntosSegundoRectangulo(P: Array<Pair<Double,Double>>, rectangulo: Array<Pair<Double,Double>>) : Array<Pair<Double,Double>> {
+	var n = P.size
+	var k = 0
+	var tmp = Array(n, {0})
+	var maximoX = obtenerMaximoCoordenadasX(P)
+	var maximoY = obtenerMaximoCoordenadasY(P)
+	if (rectangulo[3] == Pair(maximoX, maximoY)) {
+		for (i in 0 until n) {
+			if (rectangulo[0].first <= P[i].first && P[i].first <= rectangulo[2].first) {
+				if (rectangulo[0].second < P[i].second && P[i].second <= rectangulo[2].second){
+					tmp[i] = 1
+					k = k + 1 
+				}
+			}
+		}
+	} else {
+		for (i in 0 until n) {
+			if (rectangulo[0].first < P[i].first && P[i].first <= rectangulo[2].first) {
+				if (rectangulo[0].second <= P[i].second && P[i].second <= rectangulo[2].second){
+					tmp[i] = 1
+					k = k + 1
+				} 
+			}
+		}
+	}
+	var particion = Array(k, {Pair(0.0, 0.0)})
+	var j = 0
+	for (i in 0 until n) {
+		if (tmp[i] == 1) {
+			particion[j] = P[i]
+			j = j + 1
+		} 
+	}
+	return particion
+}
+
+/* Función: obtenerPuntosRectangulo
+ * Descripción: Recibe un P: Array<Pair<Double,Double>> de coordenadas y un rectangulo: Array<Pair<Double,Double>> 
+ * con las coordenadas de un rectángulo, las cuales deben estar en el siguiente orden:
+ * esquina inferior izquierda, esquina inferior derecha, esquina superior derecha, esquina superior izquierda.
+ * La función retorna un arreglo Array<Pair<Double,Double>> que contiene aquellos puntos de P que están contenidos en el 
+ * rectángulo dado. Se incluyen los lados del corte en caso de que el rectángulo dado sea el primero y no se incluye en caso
+ * contrario (por diseño)
+ * Precondición: P.size >= 1
+ * Postondición: 0 <= \result.size <= P.size
+ */ 
+fun obtenerPuntosRectangulo(P: Array<Pair<Double,Double>>, rectangulo: Array<Pair<Double,Double>>): Array<Pair<Double,Double>>{
+	if (esElPrimerRectangulo(P, rectangulo) == true) {
+		return obtenerPuntosPrimerRectangulo(P,rectangulo)
+	} else {
+		return obtenerPuntosSegundoRectangulo(P,rectangulo)
+	}
 }
 
 /* Función: obtenerPuntoDeCorteMitad
@@ -315,6 +430,14 @@ fun obtenerPuntoDeCorteMitad(rectangulo: Array<Pair<Double,Double>>, eje: String
 
 // ALGORITMO 2
 
+/* Función: obtenerParticiones
+ * Descripción: Recibe un P: Array<Pair<Double,Double>> de coordenadas y retorna un 
+ * Pair< Array<Pair<Double,Double>>, Array<Pair<Double,Double>>> que contiene dos particiones entre las cuales se reparten
+ * las ciudades dadas en P. Este algoritmo cumple el papel de "Divide" en el esquema "Divide-and-Conquer" empleado para 
+ * resolver el TSP
+ * Precondición: P.size >= 1
+ * Postondición: (\result.first).size >= 1 && (\result.second).size >= 1
+ */ 
 fun obtenerParticiones(P: Array<Pair<Double,Double>>): Pair< Array<Pair<Double,Double>>, Array<Pair<Double,Double>>> {
 	var rectangulo = obtenerRectangulo(P)
 	var (Xdim, Ydim) = obtenerDimensionesRectangulo(rectangulo)
@@ -376,6 +499,13 @@ fun imprimirArregloCoordenadas(A: Array<Pair<Double,Double>>) {
 	println("( ${xi} , ${yi} ) ] ")
 }
 
+fun imprimirArreglo(A: Array<Int>) {
+	for(i in 0 until A.size) {
+		print("${A[i]} ")
+	}
+	println("")
+}
+
 fun main(args: Array<String>) {
 	var n = args[0].toInt() // Tamaño del arreglo de coordenadas
 	var P = Array(n, {Pair(0.0,0.0)}) // Se inicializa el arreglo de coordenadas
@@ -408,7 +538,7 @@ fun main(args: Array<String>) {
 	imprimirArregloCoordenadas(particionDer)
 }
 
-// EXTRAS  
+// EXTRAS (funciones o versiones de funciones que no se usan, cuyo código prefiero dejar anotado por si acaso)
 
 /* Función: quicksortCoordenadaYTSP
  * Descripción: Recibe un arreglo P: Array<Pair<Double,Double>> de coordenadas, y dos enteros p y r que identifican el subarreglo
@@ -423,4 +553,31 @@ fun quicksortCoordenadaYTSP(P: Array<Pair<Double,Double>>, p: Int, r: Int) {
 		quicksortCoordenadaYTSP(P, p, q-1)
 		quicksortCoordenadaYTSP(P, q+1, r)
 	}
+}
+
+fun puntosDosRectangulos(P: Array<Pair<Double,Double>>, rectangulo: Array<Pair<Double,Double>>): Pair<Array<Pair<Double,Double>>, Array<Pair<Double,Double>>> {
+	var n = P.size
+	var k = 0
+	var tmp = Array(n, {0})
+	for (i in 0 until n) {
+		if (rectangulo[0].first <= P[i].first && P[i].first <= rectangulo[2].first) {
+			if (rectangulo[0].second <= P[i].second && P[i].second <= rectangulo[2].second)
+			tmp[i] = 1
+			k = k + 1 
+		}
+	}
+	var particion1 = Array(k, {Pair(0.0, 0.0)})
+	var particion2 = Array(n-k, {Pair(0.0, 0.0)})
+	var j = 0
+	var s = 0
+	for (i in 0 until n) {
+		if (tmp[i] == 1) {
+			particion1[j] = P[i]
+			j = j + 1
+		} else {
+			particion2[s] = P[i]
+			s = s + 1
+		}
+	}
+	return Pair(particion1, particion2)
 } 
