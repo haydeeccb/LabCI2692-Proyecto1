@@ -1,4 +1,5 @@
 import kotlin.math.roundToInt
+import kotlin.math.min
 /* ALGORITMOS 1 y 3 DEL PROBLEMA DEL TSP
  * Con sus respectivas funciones auxiliares
 */
@@ -22,8 +23,8 @@ fun divideAndConquerTSP(A: Array<Pair<Double, Double>>):  Array<Pair<Double, Dou
 }
 
 /* Función: cicloUnaCiudad
- * Descripción: De entrada recibe un arreglo de coordenadas de tamaño uno y retorna un arreglo de coordenadas de tamaño 2.
- * Arreglo que representa un tour, una solución válida del TSP.
+ * Descripción: De entrada recibe un arreglo de coordenadas de tamaño uno y retorna un arreglo de coordenadas de tamaño dos.
+ * Este arreglo representa un tour, una solución válida del TSP.
  * Precondición: A.size == 1  
  * Postcondición: (\result.size == 2) && (\forall int i; 0 <= i < \result.size; \result[i] == A[0]) 
 */
@@ -88,20 +89,21 @@ fun combinarCiclos(A: Array<Pair<Double, Double>>, B: Array<Pair<Double, Double>
     when (B.size) {
         0 -> return A
     }
+    var Ciclo3 = Array(B.size+A.size -2){Pair(0.0,0.0)}
     var minG = Double.MAX_VALUE;
-    for (i in 0 until A.size) {
+    for (i in 0 until A.size-1) {
         var a = A[i]
         var b: Pair<Double, Double>
-        if (i == A.size -1) {
+        if (i == A.size-1) {
             b = A[0]
         } else {
             b = A[i+1]
         }
         var dOLD1 = distancia(a, b)
-        for (j in 0 until B.size) {
+        for (j in 0 until B.size-1) {
             var c = B[j]
             var d: Pair<Double, Double>
-            if (j == B.size -1) {
+            if (j == B.size-1) {
                 d = B[0]
             } else {
                 d = B[j+1]
@@ -115,18 +117,24 @@ fun combinarCiclos(A: Array<Pair<Double, Double>>, B: Array<Pair<Double, Double>
             var g1 = distanciaGanada(dOLD1, dOLD2, dNEW1, dNEW2)
             var g2 = distanciaGanada(dOLD1, dOLD2, dNEW3, dNEW4)
 
-            var ganancia = minimo(g1, g2)
+            var ganancia = min(g1, g2)
             if (ganancia < minG) {
                 minG = ganancia
                 if (g1 < g2) {
                     //agregar lados
+                    var newC1 = Pair(a, c)
                     // agregar lados
+                    var newC2 = Pair(b, d)
                 } else {
+                    //agregar lados
+                    var newC1 = Pair(a, d)
                     // agregar lados
-                    // agregar lados
+                    var newC2 = Pair(b, c)
                 }
                 //elimnar lados
+                var dC1 = Pair (a, b)
                 //elimanr lados
+                var dC2 = Pair(c, d)
             }
         }
     }
@@ -145,4 +153,70 @@ fun distancia(a: Pair<Double, Double> , b: Pair<Double, Double>): Int {
 
 fun distanciaGanada(dOLD1: Int, dOLD2: Int, dNEW1: Int, dNEW2: Int): Int {
     return (dNEW1 + dNEW2) - (dOLD1 + dOLD2)
+}
+
+fun remover(A: Array<Pair<Double, Double>>, x: Pair<Double, Double>): Array<Pair<Double, Double>> {
+    if (A.size-3 == 0) {
+        var B = Array(0){Pair(0,0)}
+        // emptyArray<Pair<Double, Double>>()
+        return B
+    }
+    var newCicle = Array(A.size-3){Pair(0.0,0.0)}
+    var i = 0
+    for (par in A) {
+        if (par != x.first || par != x.second ) {
+            if (i == newCicle.size-1) {
+                break
+            } else {
+                newCicle[i] = par
+                i++ 
+            }
+        }
+    }
+    return newCicle
+}
+
+fun union(A: Array<Pair<Double, Double>>, B: Array<Pair<Double, Double>>, x: Pair<Pair<Double, Double>, Pair<Double, Double>>, y: Pair<Pair<Double, Double>, Pair<Double, Double>>): Array<Pair<Double, Double>> {
+    var Ciclo3 = Array(A.size+B.size+4+1){Pair(0.0,0.0)}
+    var i = 0
+    for (par in A) {
+        Ciclo3[i] = par
+        i++
+    }
+    var g1 = distancia(Ciclo3[i], x.first)
+    var g2 = distancia(Ciclo3[i], x.second)
+    if (g1 < g2) {
+        i++
+        Ciclo3[i] = x.first 
+        i++
+        Ciclo3[i] = x.second
+        i++
+    } else {
+        i++
+        Ciclo3[i] = x.second 
+        i++
+        Ciclo3[i] = x.first
+        i++
+    }
+    
+    for (par in B) {
+        Ciclo3[i] = par
+        i++
+    }
+
+    g1 = distancia(Ciclo3[i], y.first)
+    g2 = distancia(Ciclo3[i], y.second)
+    if (g1 < g2) {
+        i++
+        Ciclo3[i] =  y.first
+        i++
+        Ciclo3[i] =  y.second
+        i++
+    } else {
+        i++
+        Ciclo3[i] =  y.second
+        i++
+        Ciclo3[i] =  y.first
+        i++
+    }
 }
