@@ -1,4 +1,8 @@
-// FUNCIONES NECESARIAS PARA EL ALGORITMO 2, LÍNEAS DE CÓDIGO 1 - 430
+// Librerías
+
+import kotlin.math.roundToInt
+
+// FUNCIONES NECESARIAS PARA EL ALGORITMO 2
 
 /* Función: obtenerMaximoCoordenadasX
  * Descripción: Recibe un P: Array<Pair<Double,Double>> de coordenadas y retorna un Double que corresponde al elemento 
@@ -478,6 +482,106 @@ fun obtenerParticiones(P: Array<Pair<Double,Double>>): Pair< Array<Pair<Double,D
 	return Pair(particionIzq, particionDer)
 }
 
+
+// FUNCIONES NECESARIAS PARA EL ALGORITMO 4 (en particular para el 2-opt)
+
+/* Función: distanciaDosPuntos
+ * Descripción: Recibe dos coordenadas de puntos y retorna la distancia euclidiana entre dichos puntos, redondeada a un entero
+ * Precondición: true
+ * Postondición: \result = (sqrt((Punto2.first - Punto1.first)*(Punto2.first - Punto1.first) + (Punto2.second - Punto1.second)*(Punto2.second - Punto1.second))).roundToInt()
+ */ 
+fun distanciaDosPuntos(Punto1: Pair<Double,Double>, Punto2: Pair<Double,Double>): Int {
+	var xd = Punto2.first - Punto1.first
+	var yd = Punto2.second - Punto1.second
+	var d = Math.sqrt(xd*xd + yd*yd)
+	return d.roundToInt()
+}
+
+/* Función: obtenerDistanciaTour
+ * Descripción: Recibe un P: Array<Pair<Double,Double>> de coordenadas y un tour: Array<Int>, y retorna la distancia del tour
+ * Precondición: (\forall int i; 0 <= i && i < tour.size; 1 <= tour[i] && tour[i] <= P.size)
+ * Postondición: \result >= 0 
+ */ 
+fun obtenerDistanciaTour(tour: Array<Pair<Double,Double>>): Int {
+	var n = tour.size
+	var distancia = 0
+	for (i in 0 until n-1) {
+		distancia = distancia + distanciaDosPuntos(tour[i], tour[i+1])
+	}
+	return distancia
+}
+
+/* Función: swap2OPT
+ * Descripción: Recibe un tour: Array<Pair<Double,Double>> y dos enteros p,q que indican dos posiciones en el tour
+ * Este procedimiento invierte el subarreglo tour[p..q]
+ * Precondición: 0 <= p <= q < tour.size
+ * Postondición: (\forall int; 0 <= i && i < p: \result[i] == tour[i]) && (\forall int: q < i && i < tour.size; \result[i] == tour[i]) && (\forall int i ; p <= i && i <= q: \result[i] == tour[q+p-i])
+ */ 
+fun swap2OPT(tour: Array<Pair<Double,Double>>, p: Int, q: Int): Array<Pair<Double,Double>> {
+	var n = q-p+1
+	var tmp = Array(n, {Pair(0.0, 0.0)})
+	var k = q
+	for (i in 0 until n) {
+		tmp[i] = tour[k]
+		k = k-1
+	}
+	k = 0
+	for (i in p until q+1) {
+		tour[i] = tmp[k]
+		k = k+1
+	}
+	return tour
+}
+
+/* Función: cambioDistanciaTour
+ * Descripción: Recibe un tour: Array<Pair<Double,Double>> y dos enteros i,j. Esta función calcula el cambio en la distancia luego
+ * de retirar los lados tour[i-1],tour[i] y tour[j],tour[j+1] reemplazándolos con los lados tour[i-1],tour[j] y tour[i],tour[j+1]
+ * Precondición: 0 < i <= j < tour.size-1
+ * Postondición: true
+ */ 
+fun cambioDistanciaTour(tour: Array<Pair<Double,Double>>, i: Int, j: Int): Int {
+	var dNew1 = distanciaDosPuntos(tour[i-1], tour[j])
+	var dNew2 = distanciaDosPuntos(tour[i], tour[j+1])
+	var dOld1 = distanciaDosPuntos(tour[i-1], tour[i])
+	var dOld2 = distanciaDosPuntos(tour[j], tour[j+1])
+	var cambio = dNew1 + dNew2 - dOld1 - dOld2
+	return cambio
+}
+
+/* Función: busquedaLocalCon2OPT
+ * Descripción: Recibe un tour: Array<Pair<Double,Double>> y retorna un tour: Array<Pair<Double,Double>>. Esta función emplea el 
+ * operador 2opt para mejorar una solución del TSP 
+ * Precondición: tour.size >= 1
+ * Postondición: \result.size >= 1
+ */ 
+fun busquedaLocalCon2OPT(tour: Array<Pair<Double,Double>>) : Array<Pair<Double,Double>> {
+	var tourActual = tour
+	var n = tourActual.size
+	for (i in 1 until n-2) {
+		for (j in i+1 until n-1) {
+			var cambioDistancia = cambioDistanciaTour(tourActual, i, j)
+			if(cambioDistancia < 0) {
+				tourActual = swap2OPT(tourActual, i, j)
+			}
+		}
+	}
+	return tourActual
+}
+
+// ALGORITMO 4
+
+/* Función: divideAndConquerAndLocalSearchTSP
+ * Descripción: Recibe un arreglo P: Array<Pair<Double,Double>> con coordenadas de ciudades y retornar un tour que resuelve el
+ * problema del TSP para dicho arreglo. El problema lo resuelve por medio de la técnica de Divide-And-Conquer y luego lo mejora
+ * empleando el algoritmo 2-opt
+ * Precondición: P.size >= 1
+ * Postondición: \result.size >= 2 && \result[0] == \result[\result.size-1]
+ */ 
+/*fun divideAndConquerAndLocalSearchTSP(P: Array<Pair<Double,Double>>) : Array<Pair<Double,Double>> {
+	var c1 = divideAndConquerTSP(P)
+	return busquedaLocalCon2OPT(c1)
+}*/
+
 // PARA PROBAR LOS ALGORITMOS
 
 /* Función:
@@ -506,78 +610,58 @@ fun imprimirArreglo(A: Array<Int>) {
 	println("")
 }
 
+// Para generar tours aleatorios
+fun permutaciones(A: Array<Pair<Double, Double>>): Array<Pair<Double, Double>> {
+    var B = Array(A.size){i -> i}
+    var C: Array<Pair<Double, Double>> = Array(A.size+1){Pair(0.0,0.0)}
+    for (i in 0 until A.size) {
+        var x = (0 until A.size).random()
+        while(B[x] == -1) {
+            x = (0 until A.size).random()
+    	}
+        B[x] = -1
+        C[i] = A[x]
+    }
+    C[A.size] = C[0]
+    return C
+}
+
 fun main(args: Array<String>) {
-	var n = args[0].toInt() // Tamaño del arreglo de coordenadas
-	var P = Array(n, {Pair(0.0,0.0)}) // Se inicializa el arreglo de coordenadas
+	
+	// Generando un arreglo de coordenadas a partir de los datos dados por el usuario
+	
+	var n = args[0].toInt() // Tamaño
+	var P = Array(n, {Pair(0.0,0.0)}) // Se inicializa
 	var k = 1
-	// Con el siguiente for se asignan los valores del arreglo de coordenadas dados por el usuario
+	// Se asignan los valores
 	for (i in 0 until n) { 
 		P[i] = Pair(args[k].toDouble(), args[k+1].toDouble())
 		k = k+2
 	}
 	println("El arreglo de coordenadas es")
 	imprimirArregloCoordenadas(P)
-	println("Y el rectángulo que las contiene vienen dado por las siguientes coordenadas")
-	var rectangulo = obtenerRectangulo(P)
-	imprimirArregloCoordenadas(rectangulo)
-	println("El punto de corte del rectángulo, para el ejeDeCorte X, es")
-	var ejeDeCorte = "X"
-	var (Xc, Yc) = obtenerPuntoDeCorte(P, ejeDeCorte)
-	println("( ${Xc} , ${Yc} )")
-	println("Luego del corte se tiene los siguientes rectangulos")
-	var (rectanguloIzq, rectanguloDer) = aplicarCorte(ejeDeCorte, Pair(Xc, Yc), rectangulo)
-	println("El izquierdo")
-	imprimirArregloCoordenadas(rectanguloIzq)
-	println("Y el derecho")
-	imprimirArregloCoordenadas(rectanguloDer)
-	println("Y así obtenemos las particiones")
-	var (particionIzq, particionDer) = obtenerParticiones(P)
-	println("La izquierda")
+
+
+	// Probando el algoritmo 2
+	
+	var particionIzq = obtenerParticiones(P).first // Obtener la partición izquierda (o inferior)
+	var particionDer = obtenerParticiones(P).second  // Obtener la partición derecha (o superior)
+	println("Se tienen las siguientes particiones de P")
 	imprimirArregloCoordenadas(particionIzq)
-	println("Y la derecha")
 	imprimirArregloCoordenadas(particionDer)
+
+
+	// Probando el algoritmo 4 (el 2-opt en realidad)
+	
+	var tourAleatorio = permutaciones(P)  // Generar un tour aleatorio
+	println("El tour original es es")
+	imprimirArregloCoordenadas(tourAleatorio)
+	var distancia = obtenerDistanciaTour(tourAleatorio)
+	println("Y su distancia es ${distancia}")
+	var tourAleatorio2 = busquedaLocalCon2OPT(tourAleatorio) // Mejorar el tour aleatorio con el 2-opt
+	distancia = obtenerDistanciaTour(tourAleatorio2)
+	println("El nuevo tour es")
+	imprimirArregloCoordenadas(tourAleatorio2)
+	println("Y su distancia es ${distancia}")
 }
 
-// EXTRAS (funciones o versiones de funciones que no se usan, cuyo código prefiero dejar anotado por si acaso)
-
-/* Función: quicksortCoordenadaYTSP
- * Descripción: Recibe un arreglo P: Array<Pair<Double,Double>> de coordenadas, y dos enteros p y r que identifican el subarreglo
- * P[p...r] que se desea ordenar. Esta función ordena los elementos de P de acuerdo a las coordenadas Y, 
- * utilizando el algoritmo quicksort clásico
- * Precondición: true
- * Postondición: (\forall int i; 0 <= i && i < P.size-1; P[i].second <= P[i+1].second)
- */ 
-fun quicksortCoordenadaYTSP(P: Array<Pair<Double,Double>>, p: Int, r: Int) {
-	if (p < r) {
-		var q = particionCoordenadaY(P,p,r)
-		quicksortCoordenadaYTSP(P, p, q-1)
-		quicksortCoordenadaYTSP(P, q+1, r)
-	}
-}
-
-fun puntosDosRectangulos(P: Array<Pair<Double,Double>>, rectangulo: Array<Pair<Double,Double>>): Pair<Array<Pair<Double,Double>>, Array<Pair<Double,Double>>> {
-	var n = P.size
-	var k = 0
-	var tmp = Array(n, {0})
-	for (i in 0 until n) {
-		if (rectangulo[0].first <= P[i].first && P[i].first <= rectangulo[2].first) {
-			if (rectangulo[0].second <= P[i].second && P[i].second <= rectangulo[2].second)
-			tmp[i] = 1
-			k = k + 1 
-		}
-	}
-	var particion1 = Array(k, {Pair(0.0, 0.0)})
-	var particion2 = Array(n-k, {Pair(0.0, 0.0)})
-	var j = 0
-	var s = 0
-	for (i in 0 until n) {
-		if (tmp[i] == 1) {
-			particion1[j] = P[i]
-			j = j + 1
-		} else {
-			particion2[s] = P[i]
-			s = s + 1
-		}
-	}
-	return Pair(particion1, particion2)
-} 
