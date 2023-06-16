@@ -76,11 +76,12 @@ fun permutaciones(A: Array<Pair<Double, Double>>): Array<Pair<Double, Double>> {
 }
 
 /* Función: combinarCiclos
- * Descripción: Como entrada recibe un arreglo de coordenadas de un tamaño mayor que 3 y
- * retorna un arreglo de coordenadas que es una permutación del arreglo de entrada.
- * Además se debe cumplir ques su ultimo elemento sea igual al primer elemento(\result[0] == \result[A.size]).
- * Precondición: A.size > 3  
- * Postcondición: (\result.size == A.size + 1) && (\forall int i; 0 <= i < \result.size; (\exists int j: 0 <= j < A.size; \result[i] == A[j] )) 
+ * Descripción: Recibe como entreda dos arreglos que contienen las coordenadas de las ciudades(Array<Pair<Double,Double>>). 
+ * La funcion busca unir ambos arreglos(cada arreglo es una solucion, es decir, un tour) para contruir uno nuevo,
+ * este elemento de salida debe cumple dos requisitos, tener la distancia mas corta a recorrer todas las ciudades y cumplir las especificaciones de un tour. 
+ * Precondición: A.size >= 0  && B.size >= 0  
+ * Postcondición: (\result.size == (A.size + B.size -1 )) && 
+ * (\forall int i; 0 <= i < \result.size; (\exists int j: 0 <= j < A.size; \result[i] == A[j] ) || (\exists int j: 0 <= j < B.size; \result[i] == B[j] )) 
 */
 fun combinarCiclos(A: Array<Pair<Double, Double>>, B: Array<Pair<Double, Double>>): Array<Pair<Double, Double>> {
     when (A.size) {
@@ -162,6 +163,14 @@ fun combinarCiclos(A: Array<Pair<Double, Double>>, B: Array<Pair<Double, Double>
     return Ciclo3
 }
 
+/* Función: distancia
+ * Descripción: Recibe como entrada dos Pares que contienen las coordenadas de X y Y de las ciudades(Pair<Double, Double>).
+ * La funcion se encarga de sacar las distancia que hay entre una ciudad y otra. Cada ciudad es un par, en donde el primer elemento del par 
+ * represneta la coordenada X y el segundo elemento su coordenada en Y.
+ * Precondición: true  
+ * Postcondición: \result == Math.sqrt((b.first - a.first)*(b.first - a.first) + (b.second - a.second)*(b.second - a.second))
+ * 
+*/
 fun distancia(a: Pair<Double, Double> , b: Pair<Double, Double>): Int {
     var xd: Double = b.first - a.first
     var yd: Double = b.second - a.second 
@@ -169,10 +178,31 @@ fun distancia(a: Pair<Double, Double> , b: Pair<Double, Double>): Int {
     return dxy
 }
 
+/* Función: distanciaGanada
+ * Descripción: Recibe como entreda 4 enteros(Int), cada uno de ellos es una distancia de entre dos ciudades.
+ * El primer entero(dOLD1) es la distancia entre dos ciudades que se encuentran en la particion por la izquierda.
+ * El segundo entero(dOLD2) es la distancia entre dos ciudades que se encuentran en la particion por la derecha.
+ * El tercer y cuarto(dNEW1 y dNEW2) entero son las nuevas distancias entre una ciudad de la particion izquierda y una de la derecha.
+ * La funcion devulve la distancia ganada entre (dOLD1, dOLD2) y (dNEW1, dNEW2).
+ * La funcion busca unir ambos arreglos(cada arreglo es una solucion, es decir, un tour) para contruir uno nuevo,
+ * este elemento de salida debe cumple dos requisitos, tener la distancia mas corta a recorrer todas las ciudades y cumplir las especificaciones de un tour. 
+ * Precondición: dOLD1 > 0 && dOLD2 > 0  && dNEW1 > 0 && dNEW2 > 0
+ * Postcondición: \result == (dNEW1 + dNEW2) - (dOLD1 + dOLD2)
+*/
 fun distanciaGanada(dOLD1: Int, dOLD2: Int, dNEW1: Int, dNEW2: Int): Int {
     return (dNEW1 + dNEW2) - (dOLD1 + dOLD2)
 }
 
+/* Función: remover
+ * Descripción: Recibe como entrada un arreglo de pares(Array<Pair<Double, Double>>) que es una de las particiones del algoritmo combinarCiclos,
+ * tambien ingresa un par que contiene dos ciudades(Pair<Pair<Double, Double>, Pair<Double, Double>>).
+ * La funcion revisara cada elemento del arreglo A, si algun elemento coincide con un alguna de las ciudades del par X
+ * este procede a eliminar ese par y continua con la revision.
+ * Al final nos retornara un arreglo que posee todos los elementos de A exceptuando las dos ciudades del par X.
+ * Precondición: A.size >= 3 && (\exists int i: 0 <= i < A.size; x.first == A[i] ||  x.second == A[i]) 
+ * Postcondición: (\forall int i: 0 <= i < \result.size; x.first != A[i] ||  x.second != A[i]) 
+ * 
+*/
 fun remover(A: Array<Pair<Double, Double>>, x: Pair<Pair<Double, Double>, Pair<Double, Double>>): Array<Pair<Double, Double>> {
     if (A.size == 3) {
         var B = Array(0){Pair(0.0,0.0)}
@@ -223,26 +253,17 @@ fun remover(A: Array<Pair<Double, Double>>, x: Pair<Pair<Double, Double>, Pair<D
             return B
         }
     }
-    /*if (A.size-3 == 0) {
-        var B = Array(0){Pair(0,0)}
-        // emptyArray<Pair<Double, Double>>()
-        return B
-    }
-    var newCicle = Array(A.size-3){Pair(0.0,0.0)}
-    var i = 0
-    for (par in A) {
-        if (par != x.first || par != x.second ) {
-            if (i == newCicle.size-1) {
-                break
-            } else {
-                newCicle[i] = par
-                i++ 
-            }
-        }
-    }
-    return newCicle*/
 }
 
+/* Función: nuevoTour
+ * Descripción: Recibe como entrada un arreglo de pares(Array<Pair<Double, Double>>) que contiene las ciudades, este arreglo es una de las particiones del algoritmo combinarCiclos,
+ * ademas se ingresa un valor que sera el rango a estudiar(IntRange).
+ * La funcion crea un nuevo arreglo de pares, que contiene las cooredenadas de las ciudades. Para crear este arreglo, se eligen
+ * los elementos de A que se encuentran en el rango indicado.
+ * Precondición: A.size > 0 && rango > 0
+ * Postcondición: \result.size == (A.size-3) && (\forall int i: 0 <= i < \result.size; (\exists int j: 0 <= j < A.size; \result[i] == A[j] )) 
+ * 
+*/
 fun nuevoTour(A: Array<Pair<Double, Double>>, rango: IntRange): Array<Pair<Double, Double>> {
     var i = 0
     var B = Array(A.size-3){Pair(0.0,0.0)}
@@ -253,7 +274,16 @@ fun nuevoTour(A: Array<Pair<Double, Double>>, rango: IntRange): Array<Pair<Doubl
     return B
 }
 
-
+/* Función: tour
+ * Descripción: Recibe dos arreglos (Array<Pair<Double, Double>>) A y B que ya pasaron por la funcion remover.
+ * Estos arreglos contienen todas las ciudades exceptuando las ciudades que se debian remover para colocar los nuevos pares o conexiones. 
+ * Dos pares que se reciben como entrada y cada uno contine dos ciudades, que trazan el nuevo camino que debe tomar la persona para formar un tour con A y B.
+ * La funcion busca crear un nuevo arreglo, que contiene los elementos de A y B, ademas que intregra en ese arreglo las ciudades que estan dentro de los pares. 
+ * Precondición: A.size > 0 && B.size > 0 && \result.size == (A.size + B.size + 5)
+ * && (\forall int i: 0 <= i < A.size; x.first != A[i] &&  x.second != A[i]) && (\forall int j: 0 <= j < B.size; y.first != A[i] &&  y.second != A[i]) 
+ * Postcondición: (\forall int i: 0 <= i < \result.size; x.first != A[i] ||  x.second != A[i]) 
+ * 
+*/
 fun tour(A: Array<Pair<Double, Double>>, B: Array<Pair<Double, Double>>, x: Pair<Pair<Double, Double>, Pair<Double, Double>>, y: Pair<Pair<Double, Double>, Pair<Double, Double>>): Array<Pair<Double, Double>> {
     var Ciclo3 = Array(A.size+B.size+4+1){Pair(0.0,0.0)}
     union(A, Ciclo3, 0)
@@ -279,6 +309,14 @@ fun tour(A: Array<Pair<Double, Double>>, B: Array<Pair<Double, Double>>, x: Pair
     return Ciclo3
 }
 
+/* Función: union
+ * Descripción: Recibe como entrada un arreglo de pares(Array<Pair<Double, Double>>) que contiene las pares con las coordenadas de las ciudades.
+ * Recibe otro arreglo (Array<Pair<Double, Double>>) que guardara los elementos de A que se deben unir, ademas tambien ingresa un valor i (Int) que indica
+ * desde que posicion se debe empezar a guardar los elementos en el Ciclo.
+ * Precondición: A.size > 0 && i >= 0 && Ciclo.size > 0
+ * Postcondición: true 
+ * 
+*/
 fun union(A: Array<Pair<Double, Double>>, Ciclo: Array<Pair<Double, Double>>, i: Int ) {
     var j = i
     for (par in A) {
@@ -287,6 +325,17 @@ fun union(A: Array<Pair<Double, Double>>, Ciclo: Array<Pair<Double, Double>>, i:
     }
 }
 
+/* Función: intecambio
+ * Descripción: Recibe como entrada un arreglo de pares(Array<Pair<Double, Double>>) que contiene los elementos del tour a construir,
+ * ademas entra un par que contiene dos ciudades(Pair<Pair<Double, Double>, Pair<Double, Double>>) y un numero i que indica
+ * la posicion de la ultima ciudad que ha sido agregada
+ * La funcion tomara la coordenada de la ultima ciudad agregada a Ciclo3, sacara las distancia entre esa ciudad y las ciudades que hay dentro del par x.
+ * Una vez que haya obtenido esas distancias, las compara y determina cual es mayor. 
+ * Luego se procede en incluir en el arreglo la ciudad que tenga menor distancia.
+ * Precondición: Ciclo3.size > 0 && i >= 0 
+ * Postcondición: true
+ * 
+*/
 fun intercambio(Ciclo3: Array<Pair<Double, Double>>, x: Pair<Pair<Double, Double>, Pair<Double, Double>>, i: Int) {
     var j = i
     var g1 = distancia(Ciclo3[i], x.first)

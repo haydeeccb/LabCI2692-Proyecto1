@@ -1,4 +1,5 @@
 import kotlin.math.roundToInt
+import java.io.File
 fun main(A: Array<String>){
     var n = (A.size-1)/4
     var m = n*3 
@@ -30,6 +31,11 @@ fun main(A: Array<String>){
     incompleto(solucion, n)
     ultimoElemento(solucion)
     primerElemento(solucion)
+    val outString = "Kotlin Doc\nEscribiendo un archivo con writeText."
+    val archivo = File("test.txt")
+    archivo.writeText(outString)
+    archivo.appendText("\nLínea 3.")
+    archivo.appendText("\nLínea 4.")
 }
 
 
