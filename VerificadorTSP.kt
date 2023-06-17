@@ -4,26 +4,44 @@ import java.io.Reader
 import java.io.InputStream
 import java.io.BufferedReader
 fun main(A: Array<String>){
-    instancia(A[0])
-
+    var P = obtenerDatosTSP(A[0])
+    var i = 0
+    File(A[1]).forEachLine {line -> i++}
+    var B = Array(i){""}
+    i = 0
+    File(A[1]).forEachLine {line -> B[i++] = line}
+    datos(B)
 }
-fun instancia(A: String) {
+fun datos(A: Array<String>) {
+    if (A[0].substring(0,5) == "NAME "){
+        println("EO")
+    }
+}
+fun obtenerDatosTSP(A: String): Array<Triple<Double,Double,Int>> {
     var i = 0
     var j = 0
-    var m = 0
+    var m: Int
     var centinela1: Int
     var centinela2: Int
-    // Se cuenta la cantidad de elementos
-    File(A).forEachLine {line -> i++}
-    // Se crea arreglo que tenga esa cantidad
-    var B = Array(i){""}
-    // Se crea un arreglo que tenga esa cantida pero en pares
-    var C = Array(i-1){Pair("", "")}
+    // Se cuenta la cantidad de líneas
+    File(A).forEachLine {i++}
+    var numeroDeLineas = i
+    // Se crea arreglo con tamaño igual al número de líneas
+    var B = Array(numeroDeLineas){""}
+    // Rellenamos cada elemento de B con las líneas del texto
     i = 0
-    // Rellenamos cada elemento de B con las lineas del texto
     File(A).forEachLine {line -> B[i++] = line}
-    // revisamos cada elemento de B
-    for (k in 6 until B.size-1) {
+    // Se cuenta la cantidad de líneas que contienen coordenadas
+    var lineasDeCoordeadas = numeroDeLineas - 7
+    var finalB = numeroDeLineas - 1
+    if (B[numeroDeLineas-1] != "EOF") {
+      lineasDeCoordeadas = lineasDeCoordeadas - 1
+      finalB = finalB - 1
+    }
+    // Se crea un arreglo con tamaño igual a la cantidad de líneas que contienen coordenadas 
+    var C = Array(lineasDeCoordeadas){Triple(0.0, 0.0, 0)}
+    // Revisamos cada elemento de B
+    for (k in 6 until finalB) {
         centinela1 = 0
         centinela2 = 0
         m = 0
@@ -46,34 +64,15 @@ fun instancia(A: String) {
                 } else if (B[k][p] != ' ' && centinela1 != 0 && B[k][p-1] == ' ' && m != 0) {
                     centinela2 = p-1
                 } 
-            }
-            
-            
+            }         
         }
-        /* 
-        B[k].forEachIndexed { index, value -> 
-            if (value == ' ' && (index == 0 || index == 1)) {
-
-            }else if (value == ' ' && centinela1 == 0) {
-                centinela1 = index+1 
-            } else if (value == ' ' && centinela2 == 0) {
-                centinela2 = index+1
-            }
-        }*/
-        println(centinela1)
-        println(centinela2)
-        println(B[k].length)
-        println(B[k])
-        println(B[k].substring(centinela1, centinela2))
-        println(B[k].substring(centinela2, B[k].length))
-        println(".....")
-        //creacion de un elemento par que contiene la primera division y la segunda division del string usando substring
-        var par = Pair(B[k].substring(centinela1, centinela2), B[k].substring(centinela2, B[k].length))
-        C[j] = par
+        /* Se extrae la primera división y la segunda división del string usando substring, y se crea un Triple con esas coordenadas
+         * el número de la ciudad. Esto se guarda en el arreglo C
+         */
+        C[j] = Triple((B[k].substring(centinela1, centinela2)).toDouble(), (B[k].substring(centinela2, B[k].length)).toDouble(), j+1)
         j++
-        // Incluimos el elemento
     }
-    println(C.contentToString())
+    return C
 }
 
 /* Función: repeticion

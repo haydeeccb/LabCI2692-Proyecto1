@@ -11,18 +11,22 @@ import kotlin.math.min
  * Precondición: A.size > 0 && 
  * Postcondición: \result.size == A.size + 1 && (\forall int i; 0 <= i < \result.size; (\exists int j: 0 <= j < A.size; \result[i] == A[j] )) 
 */
-/*fun divideAndConquerTSP(A: Array<Pair<Double, Double>>):  Array<Pair<Double, Double>> {
+fun divideAndConquerTSP(A: Array<Triple<Double, Double, Int>>):  Array<Triple<Double, Double, Int>> {
     var n = A.size
-    when (n) {
-        1 -> return cicloUnaCiudad(A)
-        2 -> return cicloDosCiudades(A)
-        3 -> return cicloTresCiudades(A)
-    } 
-    var (P,Q) = obtenerParticiones(A)
-    var C1 = divideAndConquerTSP(P)
-    var C2 = divideAndConquerTSP(Q)
-    return combinarCiclos(C1, C2)
-}*/
+    if (n == 1) {
+        return cicloUnaCiudad(A)
+    } else if (n ==2) {
+        return cicloDosCiudades(A)
+    } else if (n == 3) {
+        return cicloTresCiudades(A)
+    } else {
+        var (P,Q) = obtenerParticiones(A)
+        var C1 = divideAndConquerTSP(P)
+        var C2 = divideAndConquerTSP(Q)
+        return combinarCiclos(C1, C2)
+    }
+    
+}
 
 /* Función: cicloUnaCiudad
  * Descripción: De entrada recibe un arreglo de coordenadas de tamaño uno y retorna un arreglo de coordenadas de tamaño dos.
@@ -30,7 +34,7 @@ import kotlin.math.min
  * Precondición: A.size == 1  
  * Postcondición: (\result.size == 2) && (\forall int i; 0 <= i < \result.size; \result[i] == A[0]) 
 */
-fun cicloUnaCiudad(A: Array<Pair<Double, Double>>):  Array<Pair<Double, Double>> {
+fun cicloUnaCiudad(A: Array<Triple<Double, Double, Int>>):  Array<Triple<Double, Double, Int>> {
     var B = arrayOf(A[0], A[0])
     return B
 }
@@ -41,7 +45,7 @@ fun cicloUnaCiudad(A: Array<Pair<Double, Double>>):  Array<Pair<Double, Double>>
  * Precondición: A.size == 2 
  * Postcondición: (\result.size == 3) && (\forall int i; 0 <= i < \result.size; (\exists int j: 0 <= j < A.size; \result[i] == A[j] )) 
 */
-fun cicloDosCiudades(A: Array<Pair<Double, Double>>):  Array<Pair<Double, Double>> {
+fun cicloDosCiudades(A: Array<Triple<Double, Double, Int>>):  Array<Triple<Double, Double, Int>> {
     return permutaciones(A)
 }
 
@@ -51,7 +55,7 @@ fun cicloDosCiudades(A: Array<Pair<Double, Double>>):  Array<Pair<Double, Double
  * Precondición: A.size == 3  
  * Postcondición: (\result.size == 4) && (\forall int i; 0 <= i < \result.size; (\exists int j: 0 <= j < A.size; \result[i] == A[j] )) 
 */
-fun cicloTresCiudades(A:  Array<Pair<Double, Double>>): Array<Pair<Double, Double>> {
+fun cicloTresCiudades(A:  Array<Triple<Double, Double, Int>>): Array<Triple<Double, Double, Int>> {
     return permutaciones(A)
 }
 
@@ -62,9 +66,9 @@ fun cicloTresCiudades(A:  Array<Pair<Double, Double>>): Array<Pair<Double, Doubl
  * Precondición: A.size > 3  
  * Postcondición: (\result.size == A.size + 1) && (\forall int i; 0 <= i < \result.size; (\exists int j: 0 <= j < A.size; \result[i] == A[j] )) 
 */
-fun permutaciones(A: Array<Pair<Double, Double>>): Array<Pair<Double, Double>> {
+fun permutaciones(A: Array<Triple<Double, Double, Int>>): Array<Triple<Double, Double, Int>> {
     var B = Array(A.size){i -> i}
-    var C: Array<Pair<Double, Double>> = Array(A.size+1){Pair(0.0,0.0)}
+    var C: Array<Triple<Double, Double, Int>> = Array(A.size+1){Triple(0.0,0.0, 0)}
     for (i in 0 until A.size) {
         var x = (0 until A.size).random()
         while(B[x] == -1) {
@@ -85,7 +89,7 @@ fun permutaciones(A: Array<Pair<Double, Double>>): Array<Pair<Double, Double>> {
  * Postcondición: (\result.size == (A.size + B.size -1 )) && 
  * (\forall int i; 0 <= i < \result.size; (\exists int j: 0 <= j < A.size; \result[i] == A[j] ) || (\exists int j: 0 <= j < B.size; \result[i] == B[j] )) 
 */
-fun combinarCiclos(A: Array<Pair<Double, Double>>, B: Array<Pair<Double, Double>>): Array<Pair<Double, Double>> {
+fun combinarCiclos(A: Array<Triple<Double, Double, Int>>, B: Array<Triple<Double, Double, Int>>): Array<Triple<Double, Double, Int>> {
     when (A.size) {
         0 -> return B
     }
@@ -93,13 +97,13 @@ fun combinarCiclos(A: Array<Pair<Double, Double>>, B: Array<Pair<Double, Double>
         0 -> return A
     }
     var minG = Int.MAX_VALUE;
-    var newC1: Pair<Pair<Double, Double>, Pair<Double, Double>> = Pair(Pair(0.0, 0.0), Pair(0.0, 0.0))
-    var newC2: Pair<Pair<Double, Double>, Pair<Double, Double>> = Pair(Pair(0.0, 0.0), Pair(0.0, 0.0))
-    var dC1: Pair<Pair<Double, Double>, Pair<Double, Double>> = Pair(Pair(0.0, 0.0), Pair(0.0, 0.0))
-    var dC2: Pair<Pair<Double, Double>, Pair<Double, Double>> = Pair(Pair(0.0, 0.0), Pair(0.0, 0.0))
+    var newC1: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>> = Pair(Triple(0.0, 0.0, 0), Triple(0.0, 0.0, 0))
+    var newC2: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>> = Pair(Triple(0.0, 0.0, 0), Triple(0.0, 0.0, 0))
+    var dC1: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>> = Pair(Triple(0.0, 0.0, 0), Triple(0.0, 0.0, 0))
+    var dC2: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>> = Pair(Triple(0.0, 0.0, 0), Triple(0.0, 0.0, 0))
     for (i in 0 until A.size-1) {
         var a = A[i]
-        var b: Pair<Double, Double>
+        var b: Triple<Double, Double, Int>
         if (i == A.size-1) {
             b = A[0]
         } else {
@@ -108,7 +112,7 @@ fun combinarCiclos(A: Array<Pair<Double, Double>>, B: Array<Pair<Double, Double>
         var dOLD1 = distancia(a, b)
         for (j in 0 until B.size-1) {
             var c = B[j]
-            var d: Pair<Double, Double>
+            var d: Triple<Double, Double, Int>
             if (j == B.size-1) {
                 d = B[0]
             } else {
@@ -173,7 +177,7 @@ fun combinarCiclos(A: Array<Pair<Double, Double>>, B: Array<Pair<Double, Double>
  * Postcondición: \result == Math.sqrt((b.first - a.first)*(b.first - a.first) + (b.second - a.second)*(b.second - a.second))
  * 
 */
-fun distancia(a: Pair<Double, Double> , b: Pair<Double, Double>): Int {
+fun distancia(a: Triple<Double, Double, Int> , b: Triple<Double, Double, Int>): Int {
     var xd: Double = b.first - a.first
     var yd: Double = b.second - a.second 
     var dxy = Math.sqrt(xd*xd+yd*yd).roundToInt()
@@ -205,12 +209,12 @@ fun distanciaGanada(dOLD1: Int, dOLD2: Int, dNEW1: Int, dNEW2: Int): Int {
  * Postcondición: (\forall int i: 0 <= i < \result.size; x.first != A[i] ||  x.second != A[i]) 
  * 
 */
-fun remover(A: Array<Pair<Double, Double>>, x: Pair<Pair<Double, Double>, Pair<Double, Double>>): Array<Pair<Double, Double>> {
+fun remover(A: Array<Triple<Double, Double, Int>>, x: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>): Array<Triple<Double, Double, Int>> {
     if (A.size == 3) {
-        var B = Array(0){Pair(0.0,0.0)}
+        var B = Array(0){Triple(0.0,0.0, 0)}
         return B
     } else {
-        var B = Array(A.size-3){Pair(0.0,0.0)}
+        var B = Array(A.size-3){Triple(0.0,0.0, 0)}
         var rango: IntRange
         if (A[1] == x.first) {
             rango = 3 until A.size
@@ -266,9 +270,9 @@ fun remover(A: Array<Pair<Double, Double>>, x: Pair<Pair<Double, Double>, Pair<D
  * Postcondición: \result.size == (A.size-3) && (\forall int i: 0 <= i < \result.size; (\exists int j: 0 <= j < A.size; \result[i] == A[j] )) 
  * 
 */
-fun nuevoTour(A: Array<Pair<Double, Double>>, rango: IntRange): Array<Pair<Double, Double>> {
+fun nuevoTour(A: Array<Triple<Double, Double, Int>>, rango: IntRange): Array<Triple<Double, Double, Int>> {
     var i = 0
-    var B = Array(A.size-3){Pair(0.0,0.0)}
+    var B = Array(A.size-3){Triple(0.0,0.0,0)}
     for (par in rango) {
         B[i] = A[par]
         i++
@@ -286,8 +290,8 @@ fun nuevoTour(A: Array<Pair<Double, Double>>, rango: IntRange): Array<Pair<Doubl
  * Postcondición: (\forall int i: 0 <= i < \result.size; x.first != A[i] ||  x.second != A[i]) 
  * 
 */
-fun tour(A: Array<Pair<Double, Double>>, B: Array<Pair<Double, Double>>, x: Pair<Pair<Double, Double>, Pair<Double, Double>>, y: Pair<Pair<Double, Double>, Pair<Double, Double>>): Array<Pair<Double, Double>> {
-    var Ciclo3 = Array(A.size+B.size+4+1){Pair(0.0,0.0)}
+fun tour(A: Array<Triple<Double, Double, Int>>, B: Array<Triple<Double, Double, Int>>, x: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>, y: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>): Array<Triple<Double, Double, Int>> {
+    var Ciclo3 = Array(A.size+B.size+4+1){Triple(0.0,0.0, 0)}
     union(A, Ciclo3, 0)
     println("Union 1")
     print(Ciclo3.contentToString())
@@ -319,7 +323,7 @@ fun tour(A: Array<Pair<Double, Double>>, B: Array<Pair<Double, Double>>, x: Pair
  * Postcondición: true 
  * 
 */
-fun union(A: Array<Pair<Double, Double>>, Ciclo: Array<Pair<Double, Double>>, i: Int ) {
+fun union(A: Array<Triple<Double, Double, Int>>, Ciclo: Array<Triple<Double, Double, Int>>, i: Int ) {
     var j = i
     for (par in A) {
         Ciclo[j] = par
@@ -338,7 +342,7 @@ fun union(A: Array<Pair<Double, Double>>, Ciclo: Array<Pair<Double, Double>>, i:
  * Postcondición: true
  * 
 */
-fun intercambio(Ciclo3: Array<Pair<Double, Double>>, x: Pair<Pair<Double, Double>, Pair<Double, Double>>, i: Int) {
+fun intercambio(Ciclo3: Array<Triple<Double, Double, Int>>, x: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>, i: Int) {
     var j = i
     var g1 = distancia(Ciclo3[i], x.first)
     var g2 = distancia(Ciclo3[i], x.second)
