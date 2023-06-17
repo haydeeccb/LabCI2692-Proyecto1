@@ -2,7 +2,6 @@ NAME : ./TSPLIB/a280.tsp.optbc.tour
 COMMENT : Length 31
 TYPE : TOUR
 DIMENSION : 280
-TOUR_SECTION
 1
 2
 242

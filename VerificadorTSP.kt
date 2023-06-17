@@ -10,13 +10,48 @@ fun main(A: Array<String>){
     var B = Array(i){""}
     i = 0
     File(A[1]).forEachLine {line -> B[i++] = line}
-    datos(B)
+    var C = datos(B, P.size)
 }
-fun datos(A: Array<String>) {
-    if (A[0].substring(0,5) == "NAME "){
-        println("EO")
+fun datos(A: Array<String>, x: Int): Array<Int> {
+    var B = Array(x+1){0} 
+    var j = 0
+    var longitud = 0
+    var check = 0
+    for (i in 0 until 5) {
+        if (A[i].length  < x.toString().length) {
+            continue
+        } else if (A[i].substring(0,5) == "NAME "){
+            check++
+            println("E1 ")
+        } else if(A[i].substring(0,8) == "COMMENT ") {
+            check++
+            println("2 ")
+            longitud = A[i].substring(17,A[i].length).toInt()
+        } else if(A[i].substring(0,5) == "TYPE ") {
+            check++
+            println("E3 ")
+        } else if(A[i].substring(0,10) == "DIMENSION " ) {
+            check++
+            println("E4 ")
+        } else if(A[i].substring(0,A[i].length) == "TOUR_SECTION") {
+            check++
+            println("E5 ")
+        } else (
+            continue
+        )
     }
+    if (check != 5) {
+        println("Error en el formato de TSPLIB ")
+    }
+    println(longitud)
+    for (i in check until A.size) {
+        B[j] = A[i].toInt()
+        j++
+    }
+    println(B.contentToString())
+    return B
 }
+
 fun obtenerDatosTSP(A: String): Array<Triple<Double,Double,Int>> {
     var i = 0
     var j = 0
