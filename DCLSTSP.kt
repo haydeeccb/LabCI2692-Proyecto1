@@ -1,16 +1,87 @@
 // Librerías
 
 import kotlin.math.roundToInt
+import java.io.File
+import java.io.Reader
+import java.io.InputStream
+import java.io.BufferedReader
 
-// FUNCIONES NECESARIAS PARA EL ALGORITMO 2
+// Función para obtener los datos a partir del archivo_entrada con formato TSPLIB
+
+/* Función: obtenerDatosTSP
+ * Descripción: Esta función recibe y procesa los datos del archivo de entrada en formato TSPLIB y retorna un arreglo 
+ * de coordenadas Array<Triple<Double,Double,Int>> que contiene en \result[i] los datos de la ciudad número i en el siguiente
+ * orden: coordenada x, coordenada y, número de la ciudad
+ * Precondición: A: != null
+ * Postondición: \result.size >= 1
+ */ 
+fun obtenerDatosTSP(A: String): Array<Triple<Double,Double,Int>> {
+    var i = 0
+    var j = 0
+    var m: Int
+    var centinela1: Int
+    var centinela2: Int
+    // Se cuenta la cantidad de líneas
+    File(A).forEachLine {i++}
+    var numeroDeLineas = i
+    // Se crea arreglo con tamaño igual al número de líneas
+    var B = Array(numeroDeLineas){""}
+    // Rellenamos cada elemento de B con las líneas del texto
+    i = 0
+    File(A).forEachLine {line -> B[i++] = line}
+    // Se cuenta la cantidad de líneas que contienen coordenadas
+    var lineasDeCoordeadas = numeroDeLineas - 7
+    var finalB = numeroDeLineas - 1
+    if (B[numeroDeLineas-1] != "EOF") {
+      lineasDeCoordeadas = lineasDeCoordeadas - 1
+      finalB = finalB - 1
+    }
+    // Se crea un arreglo con tamaño igual a la cantidad de líneas que contienen coordenadas 
+    var C = Array(lineasDeCoordeadas){Triple(0.0, 0.0, 0)}
+    // Revisamos cada elemento de B
+    for (k in 6 until finalB) {
+        centinela1 = 0
+        centinela2 = 0
+        m = 0
+        // Verificamos cada caracter del string que se encuentra dentro del arreglo B
+        for (p in 1 until B[k].length) {
+            // Caso en donde haya espacios al inicio
+            if (B[k][0] == ' ') {
+                if (B[k][p] != ' ' && centinela1 == 0 && B[k][p-1] == ' ' && m != 0) {
+                    centinela1 = p-1
+                } else if (B[k][p] != ' ' && centinela1 != 0 && B[k][p-1] == ' ' && m != 0) {
+                    centinela2 = p-1
+                } else if (B[k][p] != ' ' &&  B[k][p-1] == ' ') {
+                    m++
+                } 
+            } else {
+                // Caso en donde no hay espacio al principio
+                if (B[k][p] != ' ' && centinela1 == 0 && B[k][p-1] == ' ' && m == 0) {
+                    centinela1 = p-1
+                    m++
+                } else if (B[k][p] != ' ' && centinela1 != 0 && B[k][p-1] == ' ' && m != 0) {
+                    centinela2 = p-1
+                } 
+            }         
+        }
+        /* Se extrae la primera división y la segunda división del string usando substring, y se crea un Triple con esas coordenadas
+         * el número de la ciudad. Esto se guarda en el arreglo C
+         */
+        C[j] = Triple((B[k].substring(centinela1, centinela2)).toDouble(), (B[k].substring(centinela2, B[k].length)).toDouble(), j+1)
+        j++
+    }
+    return C
+}
+
+// Funciones necesarias para la implementación del algoritmo 2
 
 /* Función: obtenerMaximoCoordenadasX
- * Descripción: Recibe un P: Array<Pair<Double,Double>> de coordenadas y retorna un Double que corresponde al elemento 
+ * Descripción: Recibe un P: Array<Triple<Double,Double, Int>> de coordenadas y retorna un Double que corresponde al elemento 
  * máximo de las coordenadas X de dicho arreglo.
  * Precondición: P.size >= 1
  * Postondición: (\forall int i: 0 <= i < P.size, \result >= P[i].first) && (\exists int i; 0 <= i && i < P.size; \result == P[i].first)
  */ 
-fun obtenerMaximoCoordenadasX(P: Array<Pair<Double,Double>>): Double {
+fun obtenerMaximoCoordenadasX(P: Array<Triple<Double,Double, Int>>): Double {
 	var n = P.size
 	var maximoX = P[0].first
 	for (i in 1 until n) {
@@ -22,12 +93,12 @@ fun obtenerMaximoCoordenadasX(P: Array<Pair<Double,Double>>): Double {
 }
 
 /* Función: obtenerMinimoCoordenadasX
- * Descripción: Recibe un P: Array<Pair<Double,Double>> de coordenadas y retorna un Double que corresponde al elemento 
+ * Descripción: Recibe un P: Array<Triple<Double,Double,Int>> de coordenadas y retorna un Double que corresponde al elemento 
  * mínimo de las coordenadas X de dicho arreglo.
  * Precondición: P.size >= 1
  * Postondición: (\forall int i: 0 <= i < P.size, \result <= P[i].first) && (\exists int i; 0 <= i && i < P.size; \result == P[i].first)
  */ 
-fun obtenerMinimoCoordenadasX(P: Array<Pair<Double,Double>>): Double {
+fun obtenerMinimoCoordenadasX(P: Array<Triple<Double,Double,Int>>): Double {
 	var n = P.size
 	var minimoX = P[0].first
 	for (i in 1 until n) {
@@ -39,12 +110,12 @@ fun obtenerMinimoCoordenadasX(P: Array<Pair<Double,Double>>): Double {
 }
 
 /* Función: obtenerMaximoCoordenadasY
- * Descripción: Recibe un P: Array<Pair<Double,Double>> de coordenadas y retorna un Double que corresponde al elemento 
+ * Descripción: Recibe un P: Array<Triple<Double,Double>> de coordenadas y retorna un Double que corresponde al elemento 
  * máximo de las coordenadas Y de dicho arreglo.
  * Precondición: P.size >= 1
  * Postondición: (\forall int i: 0 <= i < P.size, \result >= P[i].second) && (\exists int i; 0 <= i && i < P.size; \result == P[i].second)
  */ 
-fun obtenerMaximoCoordenadasY(P: Array<Pair<Double,Double>>): Double {
+fun obtenerMaximoCoordenadasY(P: Array<Triple<Double,Double,Int>>): Double {
 	var n = P.size
 	var maximoY = P[0].second
 	for (i in 1 until n) {
@@ -56,12 +127,12 @@ fun obtenerMaximoCoordenadasY(P: Array<Pair<Double,Double>>): Double {
 }
 
 /* Función: obtenerMinimoCoordenadasY
- * Descripción: Recibe un P: Array<Pair<Double,Double>> de coordenadas y retorna un Double que corresponde al elemento 
+ * Descripción: Recibe un P: Array<Triple<Double,Double,Int>> de coordenadas y retorna un Double que corresponde al elemento 
  * mínimo de las coordenadas Y de dicho arreglo.
  * Precondición: P.size >= 1
  * Postondición: (\forall int i: 0 <= i < P.size, \result <= P[i].second) && (\exists int i; 0 <= i && i < P.size; \result == P[i].second)
  */ 
-fun obtenerMinimoCoordenadasY(P: Array<Pair<Double,Double>>): Double {
+fun obtenerMinimoCoordenadasY(P: Array<Triple<Double,Double,Int>>): Double {
 	var n = P.size
 	var minimoY = P[0].second
 	for (i in 1 until n) {
@@ -73,14 +144,14 @@ fun obtenerMinimoCoordenadasY(P: Array<Pair<Double,Double>>): Double {
 }
 
 /* Función: obtenerRectangulo
- * Descripción: Recibe un P: Array<Pair<Double,Double>> de coordenadas y retorna un arreglo Array<Pair<Double,Double>> 
+ * Descripción: Recibe un P: Array<Triple<Double,Double,Int>> de coordenadas y retorna un arreglo Array<Pair<Double,Double>> 
  * que muestra las coordenadas de un rectángulo que contiene todos los puntos del arreglo P. 
  * Dichas coordenadas se encuentran en el siguiente orden:
  * esquina inferior izquierda, esquina inferior derecha, esquina superior derecha, esquina superior izquierda
  * Precondición: P.size >= 1
  * Postondición: (\forall int i: 0 <= i < P.size, \result[0].first <= P[i].first <= \result[2].first && \result[0].second <= P[i].second <= \result[2].second) 
  */ 
-fun obtenerRectangulo(P: Array<Pair<Double,Double>>): Array<Pair<Double,Double>> {
+fun obtenerRectangulo(P: Array<Triple<Double,Double,Int>>): Array<Pair<Double,Double>> {
 	var minimoX = obtenerMinimoCoordenadasX(P)
 	var maximoX = obtenerMaximoCoordenadasX(P)
 	var minimoY = obtenerMinimoCoordenadasY(P)
@@ -98,7 +169,7 @@ fun obtenerRectangulo(P: Array<Pair<Double,Double>>): Array<Pair<Double,Double>>
  * retorna un Pair<Double,Double> que contiene las dimensiones de sus lados paralelos al eje X y al eje Y, en ese orden. 
  * Las coordendas del rectángulo que se recibe deben estar en el siguiente orden:
  * esquina inferior izquierda, esquina inferior derecha, esquina superior derecha, esquina superior izquierda
- * Precondición: P.size >= 0 && P[0].first <= P[2].first && P[0].second <= P[2].second
+ * Precondición: R.size >= 0 && R[0].first <= R[2].first && R[0].second <= R[2].second
  * Postondición: \result.first >= 0 && \result.second >= 0
  */ 
 fun obtenerDimensionesRectangulo(R: Array<Pair<Double,Double>>) : Pair<Double,Double> {
@@ -108,25 +179,25 @@ fun obtenerDimensionesRectangulo(R: Array<Pair<Double,Double>>) : Pair<Double,Do
 }
 
 /* Función: swap
- * Descripción: Recibe un P: Array<Pair<Double,Double>> y dos i,j: Int. Esta función intercambia las posiciones A[i] y A[j]
+ * Descripción: Recibe un P: Array<Triple<Double,Double,Int>> y dos i,j: Int. Esta función intercambia las posiciones P[i] y P[j]
  * Precondición: 0 <= i,j < P.size
  * Postondición: P[i] == \old(P[j]) && P[j] == \old(P[i])
  */ 
-fun swap (P: Array<Pair<Double,Double>>, i: Int, j: Int) {
+fun swap (P: Array<Triple<Double,Double,Int>>, i: Int, j: Int) {
     var temp = P[i]
     P[i] = P[j]
     P[j] = temp
 }
 
 /* Función: quicksortTSP
- * Descripción: Recibe un P: Array<Pair<Double,Double>> de coordenadas, dos p,r: Int que identifican el subarreglo
+ * Descripción: Recibe un P: Array<Triple<Double,Double,Int>> de coordenadas, dos p,r: Int que identifican el subarreglo
  * P[p...r] que se desea ordenar, y un coordenada: String que identifica respecto a qué coordenada se debe ordenar el arreglo. 
  * Este procedimiento ordena los elementos de P de acuerdo a las coordenadas especificadas por el String coordenada, 
  * utilizando el algoritmo quicksort clásico
  * Precondición: true
  * Postondición: (\forall int i; 0 <= i && i < P.size-1; P[i].first <= P[i+1].first) || (\forall int i; 0 <= i && i < P.size-1; P[i].second <= P[i+1].second)
  */ 
-fun quicksortTSP(P: Array<Pair<Double,Double>>, p: Int, r: Int, coordenada: String) {
+fun quicksortTSP(P: Array<Triple<Double,Double,Int>>, p: Int, r: Int, coordenada: String) {
 	if (p < r) {
 		if (coordenada == "X" || coordenada == "x") {
 			var q = particionCoordenadaX(P,p,r)
@@ -141,14 +212,14 @@ fun quicksortTSP(P: Array<Pair<Double,Double>>, p: Int, r: Int, coordenada: Stri
 }
 
 /* Función: particionCoordenadaX
- * Descripción: Recibe un arreglo P: Array<Pair<Double,Double>> de coordenadas y dos p,r: Int que identifican el subarreglo
+ * Descripción: Recibe un arreglo P: Array<Triple<Double,Double,Int>> de coordenadas y dos p,r: Int que identifican el subarreglo
  * P[p...r] sobre el cual se producirá una partición. Esta función genera una partición del subarreglo P[p...r] 
  * tal que las coordenadas X de los elementos del subarreglo P[p...q-1] sean menores que P[q].first y las coordenadas X 
  * de los elementos del subarreglo P[q+1...r] sean mayores que P[q].first. La función retorna q: Int.
  * Precondición: 0 <= p < r < P.size
  * Postondición: p <= q <= r && (\forall int i; p <= i && i < q; P[i].first <= P[q].first) && (\forall int i; q+1 <= i && i <= r; P[i].first => P[q].first)
  */  
-fun particionCoordenadaX(P: Array<Pair<Double,Double>>, p: Int, r: Int): Int {
+fun particionCoordenadaX(P: Array<Triple<Double,Double,Int>>, p: Int, r: Int): Int {
 	var x = P[r].first
 	var i = p - 1
 	for (j in p until r) {
@@ -162,14 +233,14 @@ fun particionCoordenadaX(P: Array<Pair<Double,Double>>, p: Int, r: Int): Int {
 }
 
 /* Función: particionCoordenadaY
- * Descripción: Recibe un P: Array<Pair<Double,Double>> de coordenadas, y dos p,r: Int que identifican el subarreglo
+ * Descripción: Recibe un P: Array<Triple<Double,Double,Int>> de coordenadas, y dos p,r: Int que identifican el subarreglo
  * P[p...r] sobre el cual se producirá una partición. Esta función genera una partición del subarreglo P[p...r] 
  * tal que las coordenadas Y de los elementos del subarreglo P[p...q-1] sean menores que P[q].second y las coordenadas Y
  * de los elementos del subarreglo P[q+1...r] sean mayores que P[q].second. La función retorna q: Int.
  * Precondición: 0 <= p < r < P.size
  * Postondición: p <= q <= r && (\forall int i; p <= i && i < q; P[i].second <= P[q].second) && (\forall int i; q+1 <= i && i <= r; P[i].second => P[q].second)
  */  
-fun particionCoordenadaY(P: Array<Pair<Double,Double>>, p: Int, r: Int): Int {
+fun particionCoordenadaY(P: Array<Triple<Double,Double,Int>>, p: Int, r: Int): Int {
 	var x = P[r].second
 	var i = p - 1
 	for (j in p until r) {
@@ -183,12 +254,12 @@ fun particionCoordenadaY(P: Array<Pair<Double,Double>>, p: Int, r: Int): Int {
 }
 
 /* Función: coindicenDosCoordenadasX
- * Descripción: Recibe un P: Array<Pair<Double,Double>> de coordenadas y retorna true si dos coordenadas X coindicen, 
+ * Descripción: Recibe un P: Array<Triple<Double,Double,Int>> de coordenadas y retorna true si dos coordenadas X coindicen, 
  * y false en caso contrario
  * Precondición: P.size >= 1
  * Postondición: true || false
  */ 
-fun coincidenDosCoordenadasX(P: Array<Pair<Double,Double>>): Boolean {
+fun coincidenDosCoordenadasX(P: Array<Triple<Double,Double,Int>>): Boolean {
 	var n = P.size
 	if(n == 1) {
 		return false
@@ -204,12 +275,12 @@ fun coincidenDosCoordenadasX(P: Array<Pair<Double,Double>>): Boolean {
 }
 
 /* Función: coindicenDosCoordenadasY
- * Descripción: Recibe un P: Array<Pair<Double,Double>> de coordenadas y retorna true si dos coordenadas Y coindicen, 
+ * Descripción: Recibe un P: Array<Triple<Double,Double,Int>> de coordenadas y retorna true si dos coordenadas Y coindicen, 
  * y false en caso contrario
  * Precondición: P.size >= 1
  * Postondición: true || false
  */ 
-fun coincidenDosCoordenadasY(P: Array<Pair<Double,Double>>): Boolean {
+fun coincidenDosCoordenadasY(P: Array<Triple<Double,Double,Int>>): Boolean {
 	var n = P.size
 	if(n == 1) {
 		return false
@@ -225,12 +296,12 @@ fun coincidenDosCoordenadasY(P: Array<Pair<Double,Double>>): Boolean {
 }
 
 /* Función: obtenerPuntoDeCorte
- * Descripción: Recibe un P: Array<Pair<Double,Double>> de coordenadas y un ejeDeCorte: String que identifica un eje de corte.
+ * Descripción: Recibe un P: Array<Triple<Double,Double,Int>> de coordenadas y un ejeDeCorte: String que identifica un eje de corte.
  * La función retorna un Pair<Double,Double> que corresponde al punto de corte para el arreglo P, de acuerdo al eje especificado
  * Precondición: P.size >= 1
  * Postondición: (\exists int i; 0 <= i && i < P.size; P[i] == \result)
  */ 
-fun obtenerPuntoDeCorte(P: Array<Pair<Double,Double>>, ejeDeCorte: String): Pair<Double,Double> {
+fun obtenerPuntoDeCorte(P: Array<Triple<Double,Double,Int>>, ejeDeCorte: String): Pair<Double,Double> {
 	var n = P.size
 	var pos = n/2
 	if(n%2 == 0) {
@@ -251,7 +322,7 @@ fun obtenerPuntoDeCorte(P: Array<Pair<Double,Double>>, ejeDeCorte: String): Pair
 			quicksortTSP(P,0,n-1,"Y")
 		}
 	}
-	return P[pos]
+	return Pair(P[pos].first, P[pos].second)
 }
 
 /* Función: aplicarCorte
@@ -262,7 +333,7 @@ fun obtenerPuntoDeCorte(P: Array<Pair<Double,Double>>, ejeDeCorte: String): Pair
  * los cuales se obtienen a partir del rectángulo original y trazando una recta
  * perpendicular al eje de corte por el punto de corte. Dichas coordenadas se encuentran en el siguiente orden:
  * esquina inferior izquierda, esquina inferior derecha, esquina superior derecha, esquina superior izquierda
- * Precondición: P.size >= 1
+ * Precondición: rectangulo.size >= 1
  * Precondición: rectangulo[0].first <= puntoDeCorte.first <= rectangulo[2].first && rectangulo[0].second <= puntoDeCorte.second <= rectangulo[2].second)
  * Postondición: (\result.first).size == 4 && (\result.second).size == 4
  */ 
@@ -295,7 +366,7 @@ fun aplicarCorte(ejeDeCorte: String, puntoDeCorte: Pair<Double,Double>, rectangu
 }
 
 /* Función: esElPrimerRectangulo
- * Descripción: Recibe un P: Array<Pair<Double,Double>> de coordenadas y un rectangulo: Array<Pair<Double,Double>> 
+ * Descripción: Recibe un P: Array<Triple<Double,Double,Int>> de coordenadas y un rectangulo: Array<Pair<Double,Double>> 
  * con las coordenadas de un rectángulo, las cuales deben estar en el siguiente orden:
  * esquina inferior izquierda, esquina inferior derecha, esquina superior derecha, esquina superior izquierda.
  * Esta función verifica si el rectángulo dado es el primer rectángulo que se obtiene luego de aplicar el corte al rectángulo
@@ -303,7 +374,7 @@ fun aplicarCorte(ejeDeCorte: String, puntoDeCorte: Pair<Double,Double>, rectangu
  * Precondición: P.size >= 1
  * Postondición: true || false
  */ 
-fun esElPrimerRectangulo(P: Array<Pair<Double,Double>>, rectangulo: Array<Pair<Double,Double>>): Boolean {
+fun esElPrimerRectangulo(P: Array<Triple<Double,Double,Int>>, rectangulo: Array<Pair<Double,Double>>): Boolean {
 	var minimoX = obtenerMinimoCoordenadasX(P)
 	var minimoY = obtenerMinimoCoordenadasY(P)
 	var rec00 = Pair(minimoX, minimoY)
@@ -315,7 +386,7 @@ fun esElPrimerRectangulo(P: Array<Pair<Double,Double>>, rectangulo: Array<Pair<D
 }
 
 /* Función: obtenerPuntosPrimerRectangulo
- * Descripción: Recibe un P: Array<Pair<Double,Double>> de coordenadas y un rectangulo: Array<Pair<Double,Double>> 
+ * Descripción: Recibe un P: Array<Triple<Double,Double,Int>> de coordenadas y un rectangulo: Array<Pair<Double,Double>> 
  * con las coordenadas de un rectángulo, las cuales deben estar en el siguiente orden:
  * esquina inferior izquierda, esquina inferior derecha, esquina superior derecha, esquina superior izquierda.
  * Esta función retorna los valores de P que están contenidos en el rectángulo dado, en un Array<Pair<Double,Double>>. 
@@ -324,7 +395,7 @@ fun esElPrimerRectangulo(P: Array<Pair<Double,Double>>, rectangulo: Array<Pair<D
  * Precondición: P.size >= 1
  * Postondición: \result.size >= 0
  */ 
-fun obtenerPuntosPrimerRectangulo(P: Array<Pair<Double,Double>>, rectangulo: Array<Pair<Double,Double>>): Array<Pair<Double,Double>> {
+fun obtenerPuntosPrimerRectangulo(P: Array<Triple<Double,Double,Int>>, rectangulo: Array<Pair<Double,Double>>): Array<Triple<Double,Double,Int>> {
 	var n = P.size
 	var k = 0
 	var tmp = Array(n, {0})
@@ -336,7 +407,7 @@ fun obtenerPuntosPrimerRectangulo(P: Array<Pair<Double,Double>>, rectangulo: Arr
 			}	
 		}
 	}
-	var particion = Array(k, {Pair(0.0, 0.0)})
+	var particion = Array(k, {Triple(0.0, 0.0, 0)})
 	var j = 0
 	for (i in 0 until n) {
 		if (tmp[i] == 1) {
@@ -348,16 +419,16 @@ fun obtenerPuntosPrimerRectangulo(P: Array<Pair<Double,Double>>, rectangulo: Arr
 } 
 
 /* Función: obtenerPuntosSegundoRectangulo
- * Descripción: Recibe un P: Array<Pair<Double,Double>> de coordenadas y un rectangulo: Array<Pair<Double,Double>> 
+ * Descripción: Recibe un P: Array<Triple<Double,Double,Int>> de coordenadas y un rectangulo: Array<Pair<Double,Double>> 
  * con las coordenadas de un rectángulo, las cuales deben estar en el siguiente orden:
  * esquina inferior izquierda, esquina inferior derecha, esquina superior derecha, esquina superior izquierda.
- * Esta función retorna los valores de P que están contenidos en el rectángulo dado, en un Array<Pair<Double,Double>>. 
+ * Esta función retorna los valores de P que están contenidos en el rectángulo dado, en un Array<Triple<Double,Double,Int>>. 
  * No se incluyen aquellas ciudades de P que están sobre el lado correspondiente al corte 
  * (dichas ciudades se asignan a la partición del primer rectángulo por diseño)
  * Precondición: P.size >= 1
  * Postondición: \result.size >= 0
  */ 
-fun obtenerPuntosSegundoRectangulo(P: Array<Pair<Double,Double>>, rectangulo: Array<Pair<Double,Double>>) : Array<Pair<Double,Double>> {
+fun obtenerPuntosSegundoRectangulo(P: Array<Triple<Double,Double,Int>>, rectangulo: Array<Pair<Double,Double>>) : Array<Triple<Double,Double,Int>> {
 	var n = P.size
 	var k = 0
 	var tmp = Array(n, {0})
@@ -382,7 +453,7 @@ fun obtenerPuntosSegundoRectangulo(P: Array<Pair<Double,Double>>, rectangulo: Ar
 			}
 		}
 	}
-	var particion = Array(k, {Pair(0.0, 0.0)})
+	var particion = Array(k, {Triple(0.0, 0.0, 0)})
 	var j = 0
 	for (i in 0 until n) {
 		if (tmp[i] == 1) {
@@ -394,16 +465,16 @@ fun obtenerPuntosSegundoRectangulo(P: Array<Pair<Double,Double>>, rectangulo: Ar
 }
 
 /* Función: obtenerPuntosRectangulo
- * Descripción: Recibe un P: Array<Pair<Double,Double>> de coordenadas y un rectangulo: Array<Pair<Double,Double>> 
+ * Descripción: Recibe un P: Array<Triple<Double,Double,Int>> de coordenadas y un rectangulo: Array<Pair<Double,Double>> 
  * con las coordenadas de un rectángulo, las cuales deben estar en el siguiente orden:
  * esquina inferior izquierda, esquina inferior derecha, esquina superior derecha, esquina superior izquierda.
- * La función retorna un arreglo Array<Pair<Double,Double>> que contiene aquellos puntos de P que están contenidos en el 
+ * La función retorna un arreglo Array<Triple<Double,Double,Int>> que contiene aquellos puntos de P que están contenidos en el 
  * rectángulo dado. Se incluyen los lados del corte en caso de que el rectángulo dado sea el primero y no se incluye en caso
  * contrario (por diseño)
  * Precondición: P.size >= 1
  * Postondición: 0 <= \result.size <= P.size
  */ 
-fun obtenerPuntosRectangulo(P: Array<Pair<Double,Double>>, rectangulo: Array<Pair<Double,Double>>): Array<Pair<Double,Double>>{
+fun obtenerPuntosRectangulo(P: Array<Triple<Double,Double,Int>>, rectangulo: Array<Pair<Double,Double>>): Array<Triple<Double,Double,Int>>{
 	if (esElPrimerRectangulo(P, rectangulo) == true) {
 		return obtenerPuntosPrimerRectangulo(P,rectangulo)
 	} else {
@@ -432,17 +503,17 @@ fun obtenerPuntoDeCorteMitad(rectangulo: Array<Pair<Double,Double>>, eje: String
 	}
 }
 
-// ALGORITMO 2
+// Algoritmo 2
 
 /* Función: obtenerParticiones
- * Descripción: Recibe un P: Array<Pair<Double,Double>> de coordenadas y retorna un 
- * Pair< Array<Pair<Double,Double>>, Array<Pair<Double,Double>>> que contiene dos particiones entre las cuales se reparten
+ * Descripción: Recibe un P: Array<Triple<Double,Double,Int>> de coordenadas y retorna un 
+ * Pair< Array<Triple<Double,Double,Int>>, Array<Triple<Double,Double,Int>>> que contiene dos particiones entre las cuales se reparten
  * las ciudades dadas en P. Este algoritmo cumple el papel de "Divide" en el esquema "Divide-and-Conquer" empleado para 
  * resolver el TSP
  * Precondición: P.size >= 1
  * Postondición: (\result.first).size >= 1 && (\result.second).size >= 1
  */ 
-fun obtenerParticiones(P: Array<Pair<Double,Double>>): Pair< Array<Pair<Double,Double>>, Array<Pair<Double,Double>>> {
+fun obtenerParticiones(P: Array<Triple<Double,Double,Int>>): Pair< Array<Triple<Double,Double,Int>>, Array<Triple<Double,Double,Int>>> {
 	var rectangulo = obtenerRectangulo(P)
 	var (Xdim, Ydim) = obtenerDimensionesRectangulo(rectangulo)
 	var ejeDeCorte: String
@@ -483,7 +554,7 @@ fun obtenerParticiones(P: Array<Pair<Double,Double>>): Pair< Array<Pair<Double,D
 }
 
 
-// FUNCIONES NECESARIAS PARA EL ALGORITMO 4 (en particular para el 2-opt)
+// Funciones necesariar para el algoritmo 4 (en particular para el 2-opt)
 
 /* Función: distanciaDosPuntos
  * Descripción: Recibe dos coordenadas de puntos y retorna la distancia euclidiana entre dichos puntos, redondeada a un entero
@@ -498,7 +569,7 @@ fun distanciaDosPuntos(Punto1: Pair<Double,Double>, Punto2: Pair<Double,Double>)
 }
 
 /* Función: obtenerDistanciaTour
- * Descripción: Recibe un P: Array<Pair<Double,Double>> de coordenadas y un tour: Array<Int>, y retorna la distancia del tour
+ * Descripción: Recibe un tour: Array<Pair<Double,Double>>, y retorna la distancia del tour
  * Precondición: (\forall int i; 0 <= i && i < tour.size; 1 <= tour[i] && tour[i] <= P.size)
  * Postondición: \result >= 0 
  */ 
@@ -571,16 +642,18 @@ fun busquedaLocalCon2OPT(tour: Array<Pair<Double,Double>>) : Array<Pair<Double,D
 // ALGORITMO 4
 
 /* Función: divideAndConquerAndLocalSearchTSP
- * Descripción: Recibe un arreglo P: Array<Pair<Double,Double>> con coordenadas de ciudades y retornar un tour que resuelve el
+ * Descripción: Recibe un arreglo P: Array<Triple<Double,Double,Int>> con coordenadas de ciudades y retornar un tour que resuelve el
  * problema del TSP para dicho arreglo. El problema lo resuelve por medio de la técnica de Divide-And-Conquer y luego lo mejora
  * empleando el algoritmo 2-opt
  * Precondición: P.size >= 1
  * Postondición: \result.size >= 2 && \result[0] == \result[\result.size-1]
  */ 
-/*fun divideAndConquerAndLocalSearchTSP(P: Array<Pair<Double,Double>>) : Array<Pair<Double,Double>> {
+/*fun divideAndConquerAndLocalSearchTSP(P: Array<Triple<Double,Double,Int>>) : Array<Pair<Double,Double>> {
 	var c1 = divideAndConquerTSP(P)
 	return busquedaLocalCon2OPT(c1)
 }*/
+
+
 
 // PARA PROBAR LOS ALGORITMOS
 
@@ -590,17 +663,19 @@ fun busquedaLocalCon2OPT(tour: Array<Pair<Double,Double>>) : Array<Pair<Double,D
  * Postondición:
  */ 
 
-fun imprimirArregloCoordenadas(A: Array<Pair<Double,Double>>) {
+fun imprimirArregloCoordenadas(A: Array<Triple<Double,Double,Int>>) {
 	var n = A.size 
 	print("[ ")
 	for (i in 0 until (n-1)) {
 		var xi = A[i].first
 		var yi = A[i].second
-		print("( ${xi} , ${yi} ) , ")
+		var numCiudad = A[i].third
+		print("( ${xi} , ${yi} ; ${numCiudad} ) , ")
 	}
 	var xi = A[n-1].first
 	var yi = A[n-1].second
-	println("( ${xi} , ${yi} ) ] ")
+	var numCiudad = A[n-1].third
+	println("( ${xi} , ${yi}; ${numCiudad} ) ] ")
 }
 
 fun imprimirArreglo(A: Array<Int>) {
@@ -611,7 +686,7 @@ fun imprimirArreglo(A: Array<Int>) {
 }
 
 // Para generar tours aleatorios
-fun permutaciones(A: Array<Pair<Double, Double>>): Array<Pair<Double, Double>> {
+fun tourAleatorio(A: Array<Triple<Double, Double,Int>>): Array<Pair<Double, Double>> {
     var B = Array(A.size){i -> i}
     var C: Array<Pair<Double, Double>> = Array(A.size+1){Pair(0.0,0.0)}
     for (i in 0 until A.size) {
@@ -620,7 +695,7 @@ fun permutaciones(A: Array<Pair<Double, Double>>): Array<Pair<Double, Double>> {
             x = (0 until A.size).random()
     	}
         B[x] = -1
-        C[i] = A[x]
+        C[i] = Pair(A[x].first, A[x].second)
     }
     C[A.size] = C[0]
     return C
@@ -630,7 +705,7 @@ fun main(args: Array<String>) {
 	
 	// Generando un arreglo de coordenadas a partir de los datos dados por el usuario
 	
-	var n = args[0].toInt() // Tamaño
+	/*var n = args[0].toInt() // Tamaño
 	var P = Array(n, {Pair(0.0,0.0)}) // Se inicializa
 	var k = 1
 	// Se asignan los valores
@@ -639,29 +714,43 @@ fun main(args: Array<String>) {
 		k = k+2
 	}
 	println("El arreglo de coordenadas es")
-	imprimirArregloCoordenadas(P)
+	imprimirArregloCoordenadas(P)*/
 
+	// Generando un arreglo de coordenadas a partir de un archivo_entrada con formato TSPLIB
+
+	var P = obtenerDatosTSP(args[0])
+	println("El arreglo de coordenadas de ciudades es")
+	println(" ")
+	println(P.contentToString())
+	println(" ")
 
 	// Probando el algoritmo 2
 	
 	var particionIzq = obtenerParticiones(P).first // Obtener la partición izquierda (o inferior)
 	var particionDer = obtenerParticiones(P).second  // Obtener la partición derecha (o superior)
 	println("Se tienen las siguientes particiones de P")
-	imprimirArregloCoordenadas(particionIzq)
-	imprimirArregloCoordenadas(particionDer)
-
+	println(" ")
+	println(particionIzq.contentToString())
+	println(" ") 
+	println(particionDer.contentToString())
+	println(" ") 
 
 	// Probando el algoritmo 4 (el 2-opt en realidad)
 	
-	var tourAleatorio = permutaciones(P)  // Generar un tour aleatorio
+	var tourAleatorio = tourAleatorio(P)  // Generar un tour aleatorio
 	println("El tour original es es")
-	imprimirArregloCoordenadas(tourAleatorio)
+	println(" ")
+	println(tourAleatorio.contentToString())
+	println(" ") 
 	var distancia = obtenerDistanciaTour(tourAleatorio)
 	println("Y su distancia es ${distancia}")
+	println(" ")
 	var tourAleatorio2 = busquedaLocalCon2OPT(tourAleatorio) // Mejorar el tour aleatorio con el 2-opt
 	distancia = obtenerDistanciaTour(tourAleatorio2)
 	println("El nuevo tour es")
-	imprimirArregloCoordenadas(tourAleatorio2)
+	println(" ")
+	println(tourAleatorio2.contentToString())
+	println(" ") 
 	println("Y su distancia es ${distancia}")
 }
 
