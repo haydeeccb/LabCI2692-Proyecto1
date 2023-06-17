@@ -7,39 +7,51 @@ import java.io.InputStream
 import java.io.BufferedReader
 
 fun main(args: Array<String>) {
+    println("La instancia a resolver es:" +args[0])
 	var P = obtenerDatosTSP(args[0])
+    //var tourSolucion = divideAndConquerAndLocalSearchTSP(P)
+    var tourAleatorio = obtenerTourAleatorio(P) // ESTO SE BORRA DESPUÉS, ES PARA PROBAR EL PROGRAMA
+    generarArchivoSolucionTSPLIB(args[1], tourAleatorio) // AQUÍ LUEGO SE DEBE PONER COMO PARÁMETRO EL TOUR SOLUCIÓN
+}
 
-    var tourAleatorio = obtenerTourAleatorio(P)
-    var distancia = obtenerDistanciaTour(tourAleatorio)
-    var tourTSPLIB = obtenerTourTSPLIB(tourAleatorio)
-   
-    var dimension = P.size
+// Procedimiento para generar el archivo de salida con la solución del problema TSP, en formato TSPLIB
+
+/* Función: generarArchivoSolucionTSPLIB
+ * Descripción: Recibe el nombre del archivo de salida y el tour solución, el cual viene
+ * dado por el algoritmo divideAndConquerAndLocalSearchTSP. Este procedimiento genera el archivo de salida con
+ * la solución del problema TSP, en formato TSPLIB
+ * Precondición: nombreSalida != null && tourSolucion.size >= 2
+ * Postondición: true
+ */ 
+fun generarArchivoSolucionTSPLIB(nombreSalida: String, tourSolucion: Array<Triple<Double,Double,Int>>) {
+    var distancia = obtenerDistanciaTour(tourSolucion)
+    var tourTSPLIB = obtenerTourTSPLIB(tourSolucion)
+    var dimensionTSP = tourTSPLIB.size
     var archivoSalida = File(args[1])
     var textoSalida = "NAME: "+args[1]
     archivoSalida.writeText(textoSalida)
     archivoSalida.appendText("\nCOMMENT: Length "+distancia.toString())
     archivoSalida.appendText("\nTYPE: TOUR")
-    archivoSalida.appendText("\nDIMENSION: ${dimension}")
+    archivoSalida.appendText("\nDIMENSION: ${dimensionTSP}")
     archivoSalida.appendText("\nTOUR_SECTION")
-    /* El siguiente ciclo se pone hasta tourTSPLIB.size-1 porque el último elemento del tour es igual al primero
-    y en el archivo de salida no es necesario ponerlo dos veces
-    */
-    for (i in 0 until tourTSPLIB.size-1) { 
+    for (i in 0 until tourTSPLIB.size) { 
         archivoSalida.appendText("\n"+tourTSPLIB[i])
     }
     archivoSalida.appendText("\n-1")
     archivoSalida.appendText("\nEOF")
-
 }
 
-/* Función:
- * Descripción: 
- * Precondición:
- * Postondición:
+// Función para convertir el tour solución al formato TSPLIB
+
+/* Función: obtenerTourTSPLIB
+ * Descripción: Recibe un tour: Array<Triple<Double,Double,Int>> y retorna un tour de strings que contiene 
+ * sólo los números de las ciudades, es decir, está en formato TSPLIB
+ * Precondición: tour.size >= 2
+ * Postondición: \result.size >= 1
  */ 
 fun obtenerTourTSPLIB(tour: Array<Triple<Double,Double,Int>>): Array<String> {
-	var tourTSPLIB = Array(tour.size, {""})
-	for(i in 0 until tour.size) {
+	var tourTSPLIB = Array(tour.size-1, {""})
+	for(i in 0 until tour.size-1) {
 		tourTSPLIB[i] = (tour[i].third).toString()
 	}
 	return tourTSPLIB
