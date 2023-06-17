@@ -1,44 +1,70 @@
+import kotlin.math.roundToInt
 import java.io.File
+import java.io.Reader
 import java.io.InputStream
+import java.io.BufferedReader
 
-fun main(args: Array<String>) {
-   var archivoEntrada = args[0]
-   var nombreArchivoSalida = args[1]
-   var datosEntrada = File(archivoEntrada).readText() // Leer el archivo de entrada y convertir todo su contenido en un String
-   var datosTSP = obtenerDatosTSP(datosEntrada) // datosTSP es el equivalente a un args con las palabras del archivo de entrada en orden
+fun main(A: Array<String>){
+    instancia2(A[0])
 }
 
-fun obtenerDatosTSP(datosEntrada: String): Array<String> {
-   var tamañoEntrada = datosEntrada.length // Número de caracteres en el archivo de entrada
-   var tmp = Array(tamañoEntrada, {""}) // Arreglo auxiliar
-   var saltoDeLinea = "\n"
-   var espacio = " "
-   var dosPuntos = ":"
-   var k = 0
-   var numeroDePalabras = 0
-   for (i in 0 until tamañoEntrada) {
-      // Se verifica caracter por caracter y se descartan los espacios, saltos de línea y el símbolo :
-      if (datosEntrada[i] != saltoDeLinea[0] && datosEntrada[i] != espacio[0] && datosEntrada[i] != dosPuntos[0]) { 
-         tmp[k] = tmp[k]+datosEntrada[i] // Concatenar la palabra
-      } else {
-         if (k >= 1) {
-            if (tmp[k-1] == "") { // Verificar los espacios que quedan vacíos en el arreglo auxiliar
-               tmp[k-1] = tmp[k-1]+"!" // Marcar los espacios que quedaron vacíos
-               numeroDePalabras = numeroDePalabras - 1 // Ajustar el contador del número de palabras
-            }
-         }
-         k = k + 1 // Para pasar a la siguiente palabra en el arreglo auxiliar
-         numeroDePalabras = numeroDePalabras + 1
-      }
-   }
-   var datos = Array(numeroDePalabras, {"!"}) // Inicializar un arreglo nuevo para guardar las palabras
-   var h = 0
-   for (i in 0 until k) {
-      if (tmp[i] != "!") {
-         datos[h] = tmp[i] // Almacenar las palabras en el nuevo arreglo
-         println("Palabra numero ${h+1}: ${datos[h]}") // Esto es para verificar la lectura correcta, se debe borrar al final
-         h = h + 1
-      }
-   }
-   return datos 
+fun instancia2(A: String) {
+    var i = 0
+    var j = 0
+    var m = 0
+    var centinela1: Int
+    var centinela2: Int
+    // Se cuenta la cantidad de líneas
+    File(A).forEachLine {i++}
+    var numeroDeLineas = i
+    // Se crea arreglo con tamaño igual al número de líneas
+    var B = Array(numeroDeLineas){""}
+    println("Número de líneas: ${numeroDeLineas}") // BORRAR ESTO DESPUÉS
+    // Rellenamos cada elemento de B con las líneas del texto
+    i = 0
+    File(A).forEachLine {line -> B[i++] = line}
+    print("Penúltima linea:") // BORRAR ESTO DESPUÉS
+    println(B[numeroDeLineas-1]) // BORRAR ESTO DESPUÉS
+    // Se cuenta la cantidad de líneas que contienen coordenadas
+    var lineasDeCoordeadas = numeroDeLineas - 7
+    var finalB = numeroDeLineas - 1
+    if (B[numeroDeLineas-1] != "EOF") {
+      lineasDeCoordeadas = lineasDeCoordeadas - 1
+      finalB = finalB - 1
+    }
+    // Se crea un arreglo con tamaño igual a la cantidad de líneas que contienen coordenadas 
+    var C = Array(lineasDeCoordeadas){Pair("", "")}
+    // revisamos cada elemento de B
+    for (k in 6 until finalB) {
+        centinela1 = 0
+        centinela2 = 0
+        m = 0
+        // Verificamos cada caracter del string que se encuentra dentro del arreglo B
+        for (p in 1 until B[k].length) {
+            // Caso en donde haya espacios al inicio
+            if (B[k][0] == ' ') {
+                if (B[k][p] != ' ' && centinela1 == 0 && B[k][p-1] == ' ' && m != 0) {
+                    centinela1 = p-1
+                } else if (B[k][p] != ' ' && centinela1 != 0 && B[k][p-1] == ' ' && m != 0) {
+                    centinela2 = p-1
+                } else if (B[k][p] != ' ' &&  B[k][p-1] == ' ') {
+                    m++
+                } 
+            } else {
+                // Caso en donde no hay espacio al principio
+                if (B[k][p] != ' ' && centinela1 == 0 && B[k][p-1] == ' ' && m == 0) {
+                    centinela1 = p-1
+                    m++
+                } else if (B[k][p] != ' ' && centinela1 != 0 && B[k][p-1] == ' ' && m != 0) {
+                    centinela2 = p-1
+                } 
+            }         
+        }
+        // Creación de un elemento par que contiene la primera división y la segunda división del string usando substring
+        var par = Pair(B[k].substring(centinela1, centinela2), B[k].substring(centinela2, B[k].length))
+        // Incluimos el elemento
+        C[j] = par
+        j++
+    }
+    println(C.contentToString())
 }
