@@ -558,10 +558,11 @@ fun obtenerParticiones(P: Array<Triple<Double,Double,Int>>): Pair< Array<Triple<
 
 /* Función: distanciaDosPuntos
  * Descripción: Recibe dos coordenadas de puntos y retorna la distancia euclidiana entre dichos puntos, redondeada a un entero
+ * Las coordenadas x,y de los puntos corresponden a las dos primeras coordendas de un triple
  * Precondición: true
  * Postondición: \result = (sqrt((Punto2.first - Punto1.first)*(Punto2.first - Punto1.first) + (Punto2.second - Punto1.second)*(Punto2.second - Punto1.second))).roundToInt()
  */ 
-fun distanciaDosPuntos(Punto1: Pair<Double,Double>, Punto2: Pair<Double,Double>): Int {
+fun distanciaDosPuntos(Punto1: Triple<Double,Double,Int>, Punto2: Triple<Double,Double,Int>): Int {
 	var xd = Punto2.first - Punto1.first
 	var yd = Punto2.second - Punto1.second
 	var d = Math.sqrt(xd*xd + yd*yd)
@@ -571,9 +572,9 @@ fun distanciaDosPuntos(Punto1: Pair<Double,Double>, Punto2: Pair<Double,Double>)
 /* Función: obtenerDistanciaTour
  * Descripción: Recibe un tour: Array<Pair<Double,Double>>, y retorna la distancia del tour
  * Precondición: (\forall int i; 0 <= i && i < tour.size; 1 <= tour[i] && tour[i] <= P.size)
- * Postondición: \result >= 0 
+ * Postondición: \result == \sum(int i; 0 <= i < tour.size - 1; (sqrt((tour[i+1].first - tour[i].first)*(tour[i+1].first - tour[i].first) + (tour[i].second - tour[i].second)*(tour[i].second - tour[i].second))).roundToInt())
  */ 
-fun obtenerDistanciaTour(tour: Array<Pair<Double,Double>>): Int {
+fun obtenerDistanciaTour(tour: Array<Triple<Double,Double,Int>>): Int {
 	var n = tour.size
 	var distancia = 0
 	for (i in 0 until n-1) {
@@ -583,14 +584,14 @@ fun obtenerDistanciaTour(tour: Array<Pair<Double,Double>>): Int {
 }
 
 /* Función: swap2OPT
- * Descripción: Recibe un tour: Array<Pair<Double,Double>> y dos enteros p,q que indican dos posiciones en el tour
+ * Descripción: Recibe un tour: Array<Triple<Double,Double,Int>> y dos enteros p,q que indican dos posiciones en el tour
  * Este procedimiento invierte el subarreglo tour[p..q]
  * Precondición: 0 <= p <= q < tour.size
  * Postondición: (\forall int; 0 <= i && i < p: \result[i] == tour[i]) && (\forall int: q < i && i < tour.size; \result[i] == tour[i]) && (\forall int i ; p <= i && i <= q: \result[i] == tour[q+p-i])
  */ 
-fun swap2OPT(tour: Array<Pair<Double,Double>>, p: Int, q: Int): Array<Pair<Double,Double>> {
+fun swap2OPT(tour: Array<Triple<Double,Double,Int>>, p: Int, q: Int): Array<Triple<Double,Double,Int>> {
 	var n = q-p+1
-	var tmp = Array(n, {Pair(0.0, 0.0)})
+	var tmp = Array(n, {Triple(0.0, 0.0, 0)})
 	var k = q
 	for (i in 0 until n) {
 		tmp[i] = tour[k]
@@ -605,12 +606,13 @@ fun swap2OPT(tour: Array<Pair<Double,Double>>, p: Int, q: Int): Array<Pair<Doubl
 }
 
 /* Función: cambioDistanciaTour
- * Descripción: Recibe un tour: Array<Pair<Double,Double>> y dos enteros i,j. Esta función calcula el cambio en la distancia luego
- * de retirar los lados tour[i-1],tour[i] y tour[j],tour[j+1] reemplazándolos con los lados tour[i-1],tour[j] y tour[i],tour[j+1]
+ * Descripción: Recibe un tour: Array<Triple<Double,Double,Int>> y dos enteros i,j. Esta función calcula el cambio en la distancia 
+ * luego de retirar los lados (tour[i-1],tour[i]) y (tour[j],tour[j+1]) reemplazándolos con los lados (tour[i-1],tour[j])
+ * y (tour[i],tour[j+1]). Dicho intercambio es el resultado de invertir el subarreglo tour[i..j]
  * Precondición: 0 < i <= j < tour.size-1
  * Postondición: true
  */ 
-fun cambioDistanciaTour(tour: Array<Pair<Double,Double>>, i: Int, j: Int): Int {
+fun cambioDistanciaTour(tour: Array<Triple<Double,Double,Int>>, i: Int, j: Int): Int {
 	var dNew1 = distanciaDosPuntos(tour[i-1], tour[j])
 	var dNew2 = distanciaDosPuntos(tour[i], tour[j+1])
 	var dOld1 = distanciaDosPuntos(tour[i-1], tour[i])
@@ -620,12 +622,12 @@ fun cambioDistanciaTour(tour: Array<Pair<Double,Double>>, i: Int, j: Int): Int {
 }
 
 /* Función: busquedaLocalCon2OPT
- * Descripción: Recibe un tour: Array<Pair<Double,Double>> y retorna un tour: Array<Pair<Double,Double>>. Esta función emplea el 
- * operador 2opt para mejorar una solución del TSP 
+ * Descripción: Recibe un tour: Array<Triple<Double,Double,Int>> y retorna un tour: Array<Triple<Double,Double,Int>>. 
+ * Esta función emplea el operador 2opt para mejorar una solución del TSP 
  * Precondición: tour.size >= 1
  * Postondición: \result.size >= 1
  */ 
-fun busquedaLocalCon2OPT(tour: Array<Pair<Double,Double>>) : Array<Pair<Double,Double>> {
+fun busquedaLocalCon2OPT(tour: Array<Triple<Double,Double,Int>>) : Array<Triple<Double,Double,Int>> {
 	var tourActual = tour
 	var n = tourActual.size
 	for (i in 1 until n-2) {
@@ -642,17 +644,17 @@ fun busquedaLocalCon2OPT(tour: Array<Pair<Double,Double>>) : Array<Pair<Double,D
 // ALGORITMO 4
 
 /* Función: divideAndConquerAndLocalSearchTSP
- * Descripción: Recibe un arreglo P: Array<Triple<Double,Double,Int>> con coordenadas de ciudades y retornar un tour que resuelve el
- * problema del TSP para dicho arreglo. El problema lo resuelve por medio de la técnica de Divide-And-Conquer y luego lo mejora
- * empleando el algoritmo 2-opt
+ * Descripción: Recibe un arreglo P: Array<Triple<Double,Double,Int>> con coordenadas de ciudades y retorna un 
+ * tour: Array<Triple<Double,Double,Int>> que resuelve el problema del TSP para dicho arreglo. 
+ * La función divideAndConquerAndLocalSearchTSP resuelve el problema por medio de la técnica de Divide-And-Conquer 
+ * y luego lo mejora empleando el algoritmo 2-opt
  * Precondición: P.size >= 1
  * Postondición: \result.size >= 2 && \result[0] == \result[\result.size-1]
  */ 
-/*fun divideAndConquerAndLocalSearchTSP(P: Array<Triple<Double,Double,Int>>) : Array<Pair<Double,Double>> {
+/*fun divideAndConquerAndLocalSearchTSP(P: Array<Triple<Double,Double,Int>>) : Array<Triple<Double,Double,Int>> {
 	var c1 = divideAndConquerTSP(P)
 	return busquedaLocalCon2OPT(c1)
 }*/
-
 
 
 // PARA PROBAR LOS ALGORITMOS
@@ -686,16 +688,16 @@ fun imprimirArreglo(A: Array<Int>) {
 }
 
 // Para generar tours aleatorios
-fun tourAleatorio(A: Array<Triple<Double, Double,Int>>): Array<Pair<Double, Double>> {
+fun tourAleatorio(A: Array<Triple<Double, Double,Int>>): Array<Triple<Double, Double,Int>> {
     var B = Array(A.size){i -> i}
-    var C: Array<Pair<Double, Double>> = Array(A.size+1){Pair(0.0,0.0)}
+    var C: Array<Triple<Double, Double,Int>> = Array(A.size+1){Triple(0.0, 0.0, 0)}
     for (i in 0 until A.size) {
         var x = (0 until A.size).random()
         while(B[x] == -1) {
             x = (0 until A.size).random()
     	}
         B[x] = -1
-        C[i] = Pair(A[x].first, A[x].second)
+        C[i] = A[x]
     }
     C[A.size] = C[0]
     return C
