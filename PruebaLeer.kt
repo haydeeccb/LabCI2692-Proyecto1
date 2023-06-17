@@ -8,6 +8,15 @@ fun main(A: Array<String>){
     var P = obtenerDatosTSP(A[0])
 }
 
+// Función para obtener los datos a partir del archivo_entrada con formato TSPLIB
+
+/* Función: obtenerDatosTSP
+ * Descripción: Esta función recibe y procesa los datos del archivo de entrada en formato TSPLIB y retorna un arreglo 
+ * de coordenadas Array<Triple<Double,Double,Int>> que contiene en \result[i] los datos de la ciudad número i en el siguiente
+ * orden: coordenada x, coordenada y, número de la ciudad
+ * Precondición: A: != null
+ * Postondición: \result.size >= 1
+ */ 
 fun obtenerDatosTSP(A: String): Array<Triple<Double,Double,Int>> {
     var i = 0
     var j = 0
