@@ -5,13 +5,13 @@ import java.io.InputStream
 import java.io.BufferedReader
 
 fun main(A: Array<String>){
-    instancia2(A[0])
+    var P = obtenerDatosTSP(A[0])
 }
 
-fun instancia2(A: String) {
+fun obtenerDatosTSP(A: String): Array<Triple<Double,Double,Int>> {
     var i = 0
     var j = 0
-    var m = 0
+    var m: Int
     var centinela1: Int
     var centinela2: Int
     // Se cuenta la cantidad de líneas
@@ -19,12 +19,9 @@ fun instancia2(A: String) {
     var numeroDeLineas = i
     // Se crea arreglo con tamaño igual al número de líneas
     var B = Array(numeroDeLineas){""}
-    println("Número de líneas: ${numeroDeLineas}") // BORRAR ESTO DESPUÉS
     // Rellenamos cada elemento de B con las líneas del texto
     i = 0
     File(A).forEachLine {line -> B[i++] = line}
-    print("Penúltima linea:") // BORRAR ESTO DESPUÉS
-    println(B[numeroDeLineas-1]) // BORRAR ESTO DESPUÉS
     // Se cuenta la cantidad de líneas que contienen coordenadas
     var lineasDeCoordeadas = numeroDeLineas - 7
     var finalB = numeroDeLineas - 1
@@ -33,8 +30,8 @@ fun instancia2(A: String) {
       finalB = finalB - 1
     }
     // Se crea un arreglo con tamaño igual a la cantidad de líneas que contienen coordenadas 
-    var C = Array(lineasDeCoordeadas){Pair("", "")}
-    // revisamos cada elemento de B
+    var C = Array(lineasDeCoordeadas){Triple(0.0, 0.0, 0)}
+    // Revisamos cada elemento de B
     for (k in 6 until finalB) {
         centinela1 = 0
         centinela2 = 0
@@ -60,11 +57,12 @@ fun instancia2(A: String) {
                 } 
             }         
         }
-        // Creación de un elemento par que contiene la primera división y la segunda división del string usando substring
-        var par = Pair(B[k].substring(centinela1, centinela2), B[k].substring(centinela2, B[k].length))
-        // Incluimos el elemento
-        C[j] = par
+        /* Se extrae la primera división y la segunda división del string usando substring, y se crea un Triple con esas coordenadas
+         * el número de la ciudad. Esto se guarda en el arreglo C
+         */
+        C[j] = Triple((B[k].substring(centinela1, centinela2)).toDouble(), (B[k].substring(centinela2, B[k].length)).toDouble(), j+1)
         j++
     }
-    println(C.contentToString())
+    println(C.contentToString()) // BORRAR ESTO DESPUÉS, ES PARA VERIFICAR QUE EL ARREGLO ESTÉ BIEN
+    return C
 }
