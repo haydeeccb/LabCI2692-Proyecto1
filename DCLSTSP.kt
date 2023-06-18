@@ -149,25 +149,29 @@ fun combinarCiclos(A: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Dou
             }
         }
     }
-    println(".....Agregar....")
+    println("Agregar")
     println(newC1)
     println(newC2)
-    println(".......")
-    println(".....Eliminar....")
+    println(" ")
+    println("Eliminar")
     println(dC1)
     println(dC2)
-    println(".......")
+    println("")
 
     //eliminar
     var particion1 = remover(A, dC1)
     var particion2 = remover(B, dC2)
-    println("..Particiones")
+    println("Particiones 1 y 2")
     println(particion1.contentToString())
-    println(".......")
+    println(" ")
     println(particion2.contentToString())
-    println("TOUR")
+    println(" ")
+    println("Se aplica la función tour")
     //agregar
     var Ciclo3 = tour(particion1, particion2, newC1, newC2)
+    println("Ciclo 3 (combinarCiclos)")
+    println(Ciclo3.contentToString())
+    println("")
     return Ciclo3
 }
 
@@ -212,8 +216,9 @@ fun distanciaGanada(dOLD1: Int, dOLD2: Int, dNEW1: Int, dNEW2: Int): Int {
  * 
 */
 fun remover(A: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>>, x: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>): Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> {
-    if (A.size == 3) {
-        var B = Array(0){Pair(Triple(0.0,0.0, 0), Triple(0.0,0.0, 0))}
+    if (A.size == 2) {
+        var B = Array(1){Pair(Triple(0.0,0.0, 0), Triple(0.0,0.0, 0))}
+        B[0] = A[0]
         return B
     } else {
         var B = Array((A.size-1)){Pair(Triple(0.0,0.0, 0), Triple(0.0,0.0, 0))}
@@ -229,7 +234,6 @@ fun remover(A: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, In
                 j++ 
             }
         }
-        print(B.contentToString())
         return B
     }  
 }
@@ -710,6 +714,7 @@ fun esElPrimerRectangulo(P: Array<Triple<Double,Double,Int>>, rectangulo: Array<
  */ 
 fun obtenerPuntosPrimerRectangulo(P: Array<Triple<Double,Double,Int>>, rectangulo: Array<Pair<Double,Double>>): Array<Triple<Double,Double,Int>> {
 	var n = P.size
+    println(P.contentToString())
 	var k = 0
 	var tmp = Array(n, {0})
 	for (i in 0 until n) {
@@ -983,9 +988,13 @@ fun divideAndConquerAndLocalSearchTSP(P: Array<Triple<Double,Double,Int>>) : Arr
 	var c1 = divideAndConquerTSP(P)
 	var distancia1 = obtenerDistanciaTour(c1)
 	println("La distancia del tour obtenido por el algoritmo de Divide-And-Conquer es ${distancia1}")
+    println(c1.contentToString())
+    println(" ")
 	var c2 = busquedaLocalCon2OPT(c1)
 	var distancia2OPT = obtenerDistanciaTour(c2)
 	println("La distancia del tour obtenido como solución final es ${distancia2OPT}")
+    println(c2.contentToString())
+    println(" ")
 	return c2
 }
 
