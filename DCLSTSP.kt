@@ -73,6 +73,50 @@ fun obtenerDatosTSP(A: String): Array<Triple<Double,Double,Int>> {
     return C
 }
 
+// Función para convertir el tour solución al formato TSPLIB
+
+/* Función: obtenerTourTSPLIB
+ * Descripción: Recibe un tour: tour: Array<Pair<Triple<Double,Double,Int>, Triple<Double,Double,Int>>>
+ * y retorna un tour de strings que contiene sólo los números de las ciudades del tour original y en orden, 
+ * es decir, está en formato TSPLIB
+ * Precondición: tour.size >= 1
+ * Postondición: \result.size >= 1
+ */ 
+fun obtenerTourTSPLIB(tour: Array<Pair<Triple<Double,Double,Int>, Triple<Double,Double,Int>>>): Array<String> {
+	var tourTSPLIB = Array(tour.size, {""})
+	for(i in 0 until tour.size) {
+		tourTSPLIB[i] = ((tour[i].first).third).toString()
+	}
+	return tourTSPLIB
+}
+
+// Procedimiento para generar el archivo de salida con la solución del problema TSP, en formato TSPLIB
+
+/* Función: generarArchivoSolucionTSPLIB
+ * Descripción: Recibe el nombre del archivo de salida y el tour solución, el cual viene
+ * dado por el algoritmo divideAndConquerAndLocalSearchTSP. Este procedimiento genera el archivo de salida con
+ * la solución del problema TSP, en formato TSPLIB
+ * Precondición: nombreSalida != null && tourSolucion.size >= 2
+ * Postondición: true
+ */ 
+fun generarArchivoSolucionTSPLIB(nombreSalida: String, tourSolucion: Array<Pair<Triple<Double,Double,Int>, Triple<Double,Double,Int>>>) {
+    var distancia = obtenerDistanciaTour(tourSolucion)
+    var tourTSPLIB = obtenerTourTSPLIB(tourSolucion)
+    var dimensionTSP = tourTSPLIB.size
+    var archivoSalida = File(nombreSalida)
+    var textoSalida = "NAME: "+nombreSalida
+    archivoSalida.writeText(textoSalida)
+    archivoSalida.appendText("\nCOMMENT: Length "+distancia.toString())
+    archivoSalida.appendText("\nTYPE: TOUR")
+    archivoSalida.appendText("\nDIMENSION: ${dimensionTSP}")
+    archivoSalida.appendText("\nTOUR_SECTION")
+    for (i in 0 until tourTSPLIB.size) { 
+        archivoSalida.appendText("\n"+tourTSPLIB[i])
+    }
+    archivoSalida.appendText("\n-1")
+    archivoSalida.appendText("\nEOF")
+}
+
 // Funciones necesarias para la implementación del algoritmo 2
 
 /* Función: obtenerMaximoCoordenadasX
@@ -554,13 +598,13 @@ fun obtenerParticiones(P: Array<Triple<Double,Double,Int>>): Pair< Array<Triple<
 }
 
 
-// Funciones necesariar para el algoritmo 4 (en particular para el 2-opt)
+// Funciones necesarias para la implementación del algoritmo 4
 
 /* Función: distanciaDosPuntos
  * Descripción: Recibe dos coordenadas de puntos y retorna la distancia euclidiana entre dichos puntos, redondeada a un entero
  * Las coordenadas x,y de los puntos corresponden a las dos primeras coordendas de un triple
  * Precondición: true
- * Postondición: \result = (sqrt((Punto2.first - Punto1.first)*(Punto2.first - Punto1.first) + (Punto2.second - Punto1.second)*(Punto2.second - Punto1.second))).roundToInt()
+ * Postondición: \result == (sqrt((Punto2.first - Punto1.first)*(Punto2.first - Punto1.first) + (Punto2.second - Punto1.second)*(Punto2.second - Punto1.second))).roundToInt()
  */ 
 fun distanciaDosPuntos(Punto1: Triple<Double,Double,Int>, Punto2: Triple<Double,Double,Int>): Int {
 	var xd = Punto2.first - Punto1.first
@@ -570,28 +614,28 @@ fun distanciaDosPuntos(Punto1: Triple<Double,Double,Int>, Punto2: Triple<Double,
 }
 
 /* Función: obtenerDistanciaTour
- * Descripción: Recibe un tour: Array<Pair<Double,Double>>, y retorna la distancia del tour
- * Precondición: (\forall int i; 0 <= i && i < tour.size; 1 <= tour[i] && tour[i] <= P.size)
- * Postondición: \result == \sum(int i; 0 <= i < tour.size - 1; (sqrt((tour[i+1].first - tour[i].first)*(tour[i+1].first - tour[i].first) + (tour[i].second - tour[i].second)*(tour[i].second - tour[i].second))).roundToInt())
+ * Descripción: Recibe un tour: tour: Array<Pair<Triple<Double,Double,Int>, Triple<Double,Double,Int>>> 
+ * y retorna la distancia del tour
+ * Precondición: tour.size >= 1
+ * Postondición: \result == \sum int i; 0 <= i && i < tour.size; distanciaDosPuntos(tour[i].first, tour[i].second)
  */ 
-fun obtenerDistanciaTour(tour: Array<Triple<Double,Double,Int>>): Int {
-	var n = tour.size
+fun obtenerDistanciaTour(tour: Array<Pair<Triple<Double,Double,Int>, Triple<Double,Double,Int>>>): Int {
 	var distancia = 0
-	for (i in 0 until n-1) {
-		distancia = distancia + distanciaDosPuntos(tour[i], tour[i+1])
+	for (i in 0 until tour.size) {
+		distancia = distancia + distanciaDosPuntos(tour[i].first, tour[i].second)
 	}
 	return distancia
 }
 
-/* Función: swap2OPT
- * Descripción: Recibe un tour: Array<Triple<Double,Double,Int>> y dos enteros p,q que indican dos posiciones en el tour
- * Este procedimiento invierte el subarreglo tour[p..q]
+/* Función: invertirTour
+ * Descripción: Recibe un tour: Array<Pair<Triple<Double,Double,Int>, Triple<Double,Double,Int>>> 
+ * y dos enteros p,q que indican dos lados en el tour. Esta función invierte el sub-recorrido touŕ[p..q]
  * Precondición: 0 <= p <= q < tour.size
- * Postondición: (\forall int; 0 <= i && i < p: \result[i] == tour[i]) && (\forall int: q < i && i < tour.size; \result[i] == tour[i]) && (\forall int i ; p <= i && i <= q: \result[i] == tour[q+p-i])
+ * Postondición: (\forall int i; p <= i && i <= q: tour[i] == \old(tour[q+p-i]))
  */ 
-fun swap2OPT(tour: Array<Triple<Double,Double,Int>>, p: Int, q: Int): Array<Triple<Double,Double,Int>> {
+fun invertirTour(tour: Array<Pair<Triple<Double,Double,Int>, Triple<Double,Double,Int>>>, p: Int, q: Int) {
 	var n = q-p+1
-	var tmp = Array(n, {Triple(0.0, 0.0, 0)})
+	var tmp = Array(n, {Pair(Triple(0.0, 0.0, 0), Triple(0.0, 0.0, 0))})
 	var k = q
 	for (i in 0 until n) {
 		tmp[i] = tour[k]
@@ -602,6 +646,21 @@ fun swap2OPT(tour: Array<Triple<Double,Double,Int>>, p: Int, q: Int): Array<Trip
 		tour[i] = tmp[k]
 		k = k+1
 	}
+}
+
+/* Función: swap2OPT
+ * Descripción: Recibe un tour: Array<Pair<Triple<Double,Double,Int>, Triple<Double,Double,Int>>> 
+ * y dos enteros p,q que indican dos lados en el tour
+ * Esta función intercambia los lados tour[p] y tour[q]
+ * Precondición: 0 <= p <= q < tour.size
+ * Postondición: tour[p].second == \old(tour[q].first) && tour[q].first == \old(tour[p].second) 
+ */ 
+fun swap2OPT(tour: Array<Pair<Triple<Double,Double,Int>, Triple<Double,Double,Int>>>, p: Int, q: Int): Array<Pair<Triple<Double,Double,Int>, Triple<Double,Double,Int>>> {
+	var tmp1 = Pair(tour[p].first, tour[q].first)
+	var tmp2 = Pair(tour[p].second, tour[q].second)
+	tour[p] = tmp1
+	tour[q] = tmp2
+	invertirTour(tour, p+1, q-1)
 	return tour
 }
 
@@ -612,11 +671,11 @@ fun swap2OPT(tour: Array<Triple<Double,Double,Int>>, p: Int, q: Int): Array<Trip
  * Precondición: 0 < i <= j < tour.size-1
  * Postondición: true
  */ 
-fun cambioDistanciaTour(tour: Array<Triple<Double,Double,Int>>, i: Int, j: Int): Int {
-	var dNew1 = distanciaDosPuntos(tour[i-1], tour[j])
-	var dNew2 = distanciaDosPuntos(tour[i], tour[j+1])
-	var dOld1 = distanciaDosPuntos(tour[i-1], tour[i])
-	var dOld2 = distanciaDosPuntos(tour[j], tour[j+1])
+fun cambioDistanciaTour(tour: Array<Pair<Triple<Double,Double,Int>, Triple<Double,Double,Int>>>, p: Int, q: Int): Int {
+	var dNew1 = distanciaDosPuntos(tour[p].first, tour[q].first)
+	var dNew2 = distanciaDosPuntos(tour[p].second, tour[q].second)
+	var dOld1 = distanciaDosPuntos(tour[p].first, tour[p].second)
+	var dOld2 = distanciaDosPuntos(tour[q].first, tour[q].second)
 	var cambio = dNew1 + dNew2 - dOld1 - dOld2
 	return cambio
 }
@@ -627,11 +686,11 @@ fun cambioDistanciaTour(tour: Array<Triple<Double,Double,Int>>, i: Int, j: Int):
  * Precondición: tour.size >= 1
  * Postondición: \result.size >= 1
  */ 
-fun busquedaLocalCon2OPT(tour: Array<Triple<Double,Double,Int>>) : Array<Triple<Double,Double,Int>> {
+fun busquedaLocalCon2OPT(tour: Array<Pair<Triple<Double,Double,Int>, Triple<Double,Double,Int>>>) : Array<Pair<Triple<Double,Double,Int>, Triple<Double,Double,Int>>> {
 	var tourActual = tour
 	var n = tourActual.size
-	for (i in 1 until n-2) {
-		for (j in i+1 until n-1) {
+	for (i in 1 until n-1) {
+		for (j in i+1 until n) {
 			var cambioDistancia = cambioDistanciaTour(tourActual, i, j)
 			if(cambioDistancia < 0) {
 				tourActual = swap2OPT(tourActual, i, j)
@@ -641,7 +700,7 @@ fun busquedaLocalCon2OPT(tour: Array<Triple<Double,Double,Int>>) : Array<Triple<
 	return tourActual
 }
 
-// ALGORITMO 4
+// Algoritmo 4
 
 /* Función: divideAndConquerAndLocalSearchTSP
  * Descripción: Recibe un arreglo P: Array<Triple<Double,Double,Int>> con coordenadas de ciudades y retorna un 
@@ -653,7 +712,12 @@ fun busquedaLocalCon2OPT(tour: Array<Triple<Double,Double,Int>>) : Array<Triple<
  */ 
 /*fun divideAndConquerAndLocalSearchTSP(P: Array<Triple<Double,Double,Int>>) : Array<Triple<Double,Double,Int>> {
 	var c1 = divideAndConquerTSP(P)
-	return busquedaLocalCon2OPT(c1)
+	var distancia1 = obtenerDistanciaTour(c1)
+	println("La distancia del tour obtenido por el algoritmo de Divide-And-Conquer es ${distancia1}")
+	var c2 = busquedaLocalCon2OPT(c1)
+	var distancia2OPT = obtenerDistanciaTour(c2)
+	println("La distancia del tour obtenido como solución final es ${distancia2OPT}")
+	return c2
 }*/
 
 
@@ -687,20 +751,14 @@ fun imprimirArreglo(A: Array<Int>) {
 	println("")
 }
 
-// Para generar tours aleatorios
-fun tourAleatorio(A: Array<Triple<Double, Double,Int>>): Array<Triple<Double, Double,Int>> {
-    var B = Array(A.size){i -> i}
-    var C: Array<Triple<Double, Double,Int>> = Array(A.size+1){Triple(0.0, 0.0, 0)}
-    for (i in 0 until A.size) {
-        var x = (0 until A.size).random()
-        while(B[x] == -1) {
-            x = (0 until A.size).random()
-    	}
-        B[x] = -1
-        C[i] = A[x]
-    }
-    C[A.size] = C[0]
-    return C
+// Para generar un tour ordenado
+fun obtenerTourOrdenado(A: Array<Triple<Double, Double,Int>>): Array<Pair<Triple<Double,Double,Int>, Triple<Double,Double,Int>>> {
+	var C = Array(A.size, {Pair(Triple(0.0, 0.0, 0), Triple(0.0, 0.0, 0))})
+	for (i in 0 until A.size-1) {
+		C[i] = Pair(A[i], A[i+1])
+	}
+	C[A.size-1] = Pair(A[A.size-1], A[0])
+	return C
 }
 
 fun main(args: Array<String>) {
@@ -719,6 +777,9 @@ fun main(args: Array<String>) {
 	imprimirArregloCoordenadas(P)*/
 
 	// Generando un arreglo de coordenadas a partir de un archivo_entrada con formato TSPLIB
+
+	println("La instancia a resolver es: " +args[0])
+	println(" ")
 
 	var P = obtenerDatosTSP(args[0])
 	println("El arreglo de coordenadas de ciudades es")
@@ -739,19 +800,19 @@ fun main(args: Array<String>) {
 
 	// Probando el algoritmo 4 (el 2-opt en realidad)
 	
-	var tourAleatorio = tourAleatorio(P)  // Generar un tour aleatorio
+	var tourOrdenado = obtenerTourOrdenado(P)  // Generar un tour ordenado
 	println("El tour original es es")
 	println(" ")
-	println(tourAleatorio.contentToString())
+	println(tourOrdenado.contentToString())
 	println(" ") 
-	var distancia = obtenerDistanciaTour(tourAleatorio)
+	var distancia = obtenerDistanciaTour(tourOrdenado)
 	println("Y su distancia es ${distancia}")
 	println(" ")
-	var tourAleatorio2 = busquedaLocalCon2OPT(tourAleatorio) // Mejorar el tour aleatorio con el 2-opt
-	distancia = obtenerDistanciaTour(tourAleatorio2)
+	var tourOPT = busquedaLocalCon2OPT(tourOrdenado) // Mejorar el tour ordenado con el 2-opt
+	distancia = obtenerDistanciaTour(tourOPT)
 	println("El nuevo tour es")
 	println(" ")
-	println(tourAleatorio2.contentToString())
+	println(tourOPT.contentToString())
 	println(" ") 
 	println("Y su distancia es ${distancia}")
 }
