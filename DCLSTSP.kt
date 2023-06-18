@@ -10,14 +10,14 @@ import java.io.BufferedReader
 fun main(args: Array<String>) {
     println("La instancia a resolver es: " +args[0])
     var P = obtenerDatosTSP(args[0])
-    println("El arreglo de ciudades es:")
+    /*println("El arreglo de ciudades es:")
     println(P.contentToString())
-    println("")
+    println("")*/
     var tourSolucion = divideAndConquerAndLocalSearchTSP(P)
-    println("El tour solución es:")
+    /*println("El tour solución es:")
     println(tourSolucion.contentToString())
     println("")
-    generarArchivoSolucionTSPLIB(args[1], tourSolucion)
+    generarArchivoSolucionTSPLIB(args[1], tourSolucion)*/
 }
 
 /* ALGORITMOS 1 y 3 DEL PROBLEMA DEL TSP
@@ -29,16 +29,19 @@ fun main(args: Array<String>) {
  * Precondición: A.size > 0 && 
  * Postcondición: \result.size == A.size + 1 && (\forall int i; 0 <= i < \result.size; (\exists int j: 0 <= j < A.size; \result[i] == A[j] )) 
 */
-fun divideAndConquerTSP(A: Array<Triple<Double, Double, Int>>):  Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> {
-    var n = A.size
+fun divideAndConquerTSP(P: Array<Triple<Double, Double, Int>>):  Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> {
+    var n = P.size
     if (n == 1) {
-        return cicloUnaCiudad(A)
+        return cicloUnaCiudad(P)
     } else if (n ==2) {
-        return cicloDosCiudades(A)
+        return cicloDosCiudades(P)
     } else if (n == 3) {
-        return cicloTresCiudades(A)
+        return cicloTresCiudades(P)
     } else {
-        var (pIzquierda,pDerecha) = obtenerParticiones(A)
+        println("P")
+        println(P.contentToString())
+        println(" ")
+        var (pIzquierda,pDerecha) = obtenerParticiones(P)
         var C1 = divideAndConquerTSP(pIzquierda)
         var C2 = divideAndConquerTSP(pDerecha)
         return combinarCiclos(C1, C2)
@@ -725,6 +728,31 @@ fun obtenerPuntosPrimerRectangulo(P: Array<Triple<Double,Double,Int>>, rectangul
 		} 
 	}
 	return particion
+}
+
+/* Función: casoExtremo
+ * Descripción: Recibe un P: Array<Triple<Double,Double,Int>> con coordenadas de ciudades y un rectángulo: Array<Pair<Double,Double>> 
+ * con las coordenadas de un rectángulo, las cuales deben estar en el siguiente orden:
+ * esquina inferior izquierda, esquina inferior derecha, esquina superior derecha, esquina superior izquierda.
+ * Esta función verifica si se cumple el caso extremo en el cual el eje de corte para las particiones del algoritmo 2 corresponde
+ * a uno de los lados del rectángulo que contiene a P. En ese caso el rectángulo izquierdo (o inferior) se reduce a una
+ * línea y el rectángulo derecho (o superior) corresponde al rectángulo completo.
+ * Precondición: P.size >= 1 && rectangulo.size == 4
+ * Postondición: true || false
+ */ 
+fun casoExtremo(P: Array<Triple<Double,Double,Int>>, rectangulo: Array<Pair<Double,Double>>): Boolean {
+    var esElPrimero = esElPrimerRectangulo(P,rectangulo)
+    if (esElPrimero == true) {
+        if ((rectangulo[0] == rectangulo[1]) || (rectangulo[0] == rectangulo[3])) {
+            return true
+        }
+    } else {
+        var rectanguloCompleto = obtenerRectangulo(P)
+        if (rectangulo.contentEquals(rectanguloCompleto)) {
+            return true
+        }
+    }
+    return false
 } 
 
 /* Función: obtenerPuntosSegundoRectangulo
@@ -743,7 +771,8 @@ fun obtenerPuntosSegundoRectangulo(P: Array<Triple<Double,Double,Int>>, rectangu
 	var tmp = Array(n, {0})
 	var minimoX = obtenerMinimoCoordenadasX(P)
 	var maximoY = obtenerMaximoCoordenadasY(P)
-	if (rectangulo[3] == Pair(minimoX, maximoY)) {
+    var minimoY = obtenerMinimoCoordenadasY(P)
+	if (rectangulo[3] == Pair(minimoX, maximoY) && rectangulo[0] != Pair(minimoX, minimoY)) {
 		for (i in 0 until n) {
 			if (rectangulo[0].first <= P[i].first && P[i].first <= rectangulo[2].first) {
 				if (rectangulo[0].second < P[i].second && P[i].second <= rectangulo[2].second){
@@ -784,11 +813,20 @@ fun obtenerPuntosSegundoRectangulo(P: Array<Triple<Double,Double,Int>>, rectangu
  * Postondición: 0 <= \result.size <= P.size
  */ 
 fun obtenerPuntosRectangulo(P: Array<Triple<Double,Double,Int>>, rectangulo: Array<Pair<Double,Double>>): Array<Triple<Double,Double,Int>>{
-	if (esElPrimerRectangulo(P, rectangulo) == true) {
-		return obtenerPuntosPrimerRectangulo(P,rectangulo)
-	} else {
-		return obtenerPuntosSegundoRectangulo(P,rectangulo)
-	}
+	if (casoExtremo(P,rectangulo) == true) {
+        if (esElPrimerRectangulo(P,rectangulo) == true) {
+            var B = Array(0, {Triple(0.0, 0.0, 0)})
+            return B
+        } else {
+            return P
+        }
+    } else {
+        if (esElPrimerRectangulo(P, rectangulo) == true) {
+            return obtenerPuntosPrimerRectangulo(P,rectangulo)
+        } else {
+            return obtenerPuntosSegundoRectangulo(P,rectangulo)
+        }
+    }
 }
 
 /* Función: obtenerPuntoDeCorteMitad
