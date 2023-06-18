@@ -11,7 +11,7 @@ import kotlin.math.min
  * Precondición: A.size > 0 && 
  * Postcondición: \result.size == A.size + 1 && (\forall int i; 0 <= i < \result.size; (\exists int j: 0 <= j < A.size; \result[i] == A[j] )) 
 */
-fun divideAndConquerTSP(A: Array<Triple<Double, Double, Int>>):  Array<Triple<Double, Double, Int>> {
+/*fun divideAndConquerTSP(A: Array<Triple<Double, Double, Int>>):  Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> {
     var n = A.size
     if (n == 1) {
         return cicloUnaCiudad(A)
@@ -26,7 +26,7 @@ fun divideAndConquerTSP(A: Array<Triple<Double, Double, Int>>):  Array<Triple<Do
         return combinarCiclos(C1, C2)
     }
     
-}
+}*/
 
 /* Función: cicloUnaCiudad
  * Descripción: De entrada recibe un arreglo de coordenadas de tamaño uno y retorna un arreglo de coordenadas de tamaño dos.
@@ -34,8 +34,8 @@ fun divideAndConquerTSP(A: Array<Triple<Double, Double, Int>>):  Array<Triple<Do
  * Precondición: A.size == 1  
  * Postcondición: (\result.size == 2) && (\forall int i; 0 <= i < \result.size; \result[i] == A[0]) 
 */
-fun cicloUnaCiudad(A: Array<Triple<Double, Double, Int>>):  Array<Triple<Double, Double, Int>> {
-    var B = arrayOf(A[0], A[0])
+fun cicloUnaCiudad(A: Array<Triple<Double, Double, Int>>):  Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> {
+    var B = arrayOf(Pair(A[0], A[0]))
     return B
 }
 
@@ -45,8 +45,9 @@ fun cicloUnaCiudad(A: Array<Triple<Double, Double, Int>>):  Array<Triple<Double,
  * Precondición: A.size == 2 
  * Postcondición: (\result.size == 3) && (\forall int i; 0 <= i < \result.size; (\exists int j: 0 <= j < A.size; \result[i] == A[j] )) 
 */
-fun cicloDosCiudades(A: Array<Triple<Double, Double, Int>>):  Array<Triple<Double, Double, Int>> {
-    return permutaciones(A)
+fun cicloDosCiudades(A: Array<Triple<Double, Double, Int>>):  Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> {
+    var B = arrayOf(Pair(A[0], A[1]), Pair(A[1], A[0]))
+    return B
 }
 
 /* Función: cicloTresCiudades
@@ -55,30 +56,9 @@ fun cicloDosCiudades(A: Array<Triple<Double, Double, Int>>):  Array<Triple<Doubl
  * Precondición: A.size == 3  
  * Postcondición: (\result.size == 4) && (\forall int i; 0 <= i < \result.size; (\exists int j: 0 <= j < A.size; \result[i] == A[j] )) 
 */
-fun cicloTresCiudades(A:  Array<Triple<Double, Double, Int>>): Array<Triple<Double, Double, Int>> {
-    return permutaciones(A)
-}
-
-/* Función: permutaciones
- * Descripción: Como entrada recibe un arreglo de coordenadas de un tamaño mayor que 3 y
- * retorna un arreglo de coordenadas que es una permutación del arreglo de entrada.
- * Además se debe cumplir ques su ultimo elemento sea igual al primer elemento(\result[0] == \result[A.size]).
- * Precondición: A.size > 3  
- * Postcondición: (\result.size == A.size + 1) && (\forall int i; 0 <= i < \result.size; (\exists int j: 0 <= j < A.size; \result[i] == A[j] )) 
-*/
-fun permutaciones(A: Array<Triple<Double, Double, Int>>): Array<Triple<Double, Double, Int>> {
-    var B = Array(A.size){i -> i}
-    var C: Array<Triple<Double, Double, Int>> = Array(A.size+1){Triple(0.0,0.0, 0)}
-    for (i in 0 until A.size) {
-        var x = (0 until A.size).random()
-        while(B[x] == -1) {
-            x = (0 until A.size).random()
-    	}
-        B[x] = -1
-        C[i] = A[x]
-    }
-    C[A.size] = C[0]
-    return C
+fun cicloTresCiudades(A:  Array<Triple<Double, Double, Int>>): Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> {
+    var B = arrayOf(Pair(A[0], A[1]), Pair(A[1], A[2]), Pair(A[2], A[0]))
+    return B
 }
 
 /* Función: combinarCiclos
@@ -89,7 +69,8 @@ fun permutaciones(A: Array<Triple<Double, Double, Int>>): Array<Triple<Double, D
  * Postcondición: (\result.size == (A.size + B.size -1 )) && 
  * (\forall int i; 0 <= i < \result.size; (\exists int j: 0 <= j < A.size; \result[i] == A[j] ) || (\exists int j: 0 <= j < B.size; \result[i] == B[j] )) 
 */
-fun combinarCiclos(A: Array<Triple<Double, Double, Int>>, B: Array<Triple<Double, Double, Int>>): Array<Triple<Double, Double, Int>> {
+fun combinarCiclos(A: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>>, B: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>>): 
+    Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> {
     when (A.size) {
         0 -> return B
     }
@@ -102,22 +83,14 @@ fun combinarCiclos(A: Array<Triple<Double, Double, Int>>, B: Array<Triple<Double
     var dC1: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>> = Pair(Triple(0.0, 0.0, 0), Triple(0.0, 0.0, 0))
     var dC2: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>> = Pair(Triple(0.0, 0.0, 0), Triple(0.0, 0.0, 0))
     for (i in 0 until A.size-1) {
-        var a = A[i]
-        var b: Triple<Double, Double, Int>
-        if (i == A.size-1) {
-            b = A[0]
-        } else {
-            b = A[i+1]
-        }
-        var dOLD1 = distancia(a, b)
+        var lado1 = A[i]
+        var a = lado1.first
+        var b = lado1.second
+        var dOLD1 = distancia(a,b)
         for (j in 0 until B.size-1) {
-            var c = B[j]
-            var d: Triple<Double, Double, Int>
-            if (j == B.size-1) {
-                d = B[0]
-            } else {
-                d = B[j+1]
-            }
+            var lado2 = B[j]
+            var c = lado2.first
+            var d = lado2.second
             var dOLD2 = distancia(c,d)
             var dNEW1 = distancia(a,c)
             var dNEW2 = distancia(b,d)
@@ -162,6 +135,7 @@ fun combinarCiclos(A: Array<Triple<Double, Double, Int>>, B: Array<Triple<Double
     var particion2 = remover(B, dC2)
     println("..Particiones")
     println(particion1.contentToString())
+    println(".......")
     println(particion2.contentToString())
     println("TOUR")
     //agregar
@@ -209,75 +183,27 @@ fun distanciaGanada(dOLD1: Int, dOLD2: Int, dNEW1: Int, dNEW2: Int): Int {
  * Postcondición: (\forall int i: 0 <= i < \result.size; x.first != A[i] ||  x.second != A[i]) 
  * 
 */
-fun remover(A: Array<Triple<Double, Double, Int>>, x: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>): Array<Triple<Double, Double, Int>> {
+fun remover(A: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>>, x: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>): Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> {
     if (A.size == 3) {
-        var B = Array(0){Triple(0.0,0.0, 0)}
+        var B = Array(0){Pair(Triple(0.0,0.0, 0), Triple(0.0,0.0, 0))}
         return B
     } else {
-        var B = Array(A.size-3){Triple(0.0,0.0, 0)}
-        var rango: IntRange
-        if (A[1] == x.first) {
-            rango = 3 until A.size
-            var T = nuevoTour(A, rango)
-            println("removedor1")
-            println(T.contentToString())
-            return T
-        } else if (A[1] == x.second) {
-            rango = 2 until A.size-1
-            var T = nuevoTour(A, rango)
-            println("removedor2")
-            println(T.contentToString())
-            return T
-        } else if (A[A.size-2] == x.first) {
-            rango = 1 until A.size-2
-            var T = nuevoTour(A, rango)
-            println("removedor3")
-            println(T.contentToString())
-            return T
-        } else if (A[A.size-2] == x.second) {
-            rango = 0 until A.size-3
-            var T = nuevoTour(A, rango)
-            println("removedor4")
-            println(T.contentToString())
-            return T
-        } else {
-            //var tamaño1 = (A.size-1 - A.indexOf(x.second))
-            //var tamaño2 = (A.indexOf(x.first) - 1)
-            //var particion1 = Array(tamaño1) {Pair(0.0, 0.0)}
-            //var particion2 = Array(tamaño2) {Pair(0.0, 0.0)}
-            var indicador = 0
-            for (elementos in A.indexOf(x.second) until A.size ) {
-                B[indicador] = A[elementos]
-                indicador++
+        var B = Array((A.size-1)){Pair(Triple(0.0,0.0, 0), Triple(0.0,0.0, 0))}
+        var j = 0
+        for(i in 0 until A.size) {
+            var lado = A[i]
+            var ciudad1 = lado.first
+            var ciudad2 = lado.second
+            if ((ciudad1 == x.first || ciudad1 == x.second) && (ciudad2 == x.first || ciudad2 == x.second)) {
+                continue
+            } else {
+                B[j] = A[i]
+                j++ 
             }
-            for (elementos in 1 until A.indexOf(x.first)) {
-                B[indicador] = A[elementos]
-                indicador++
-            }
-            print("removedor5")
-            print(B.contentToString())
-            return B
         }
-    }
-}
-
-/* Función: nuevoTour
- * Descripción: Recibe como entrada un arreglo de pares(Array<Pair<Double, Double>>) que contiene las ciudades, este arreglo es una de las particiones del algoritmo combinarCiclos,
- * ademas se ingresa un valor que sera el rango a estudiar(IntRange).
- * La funcion crea un nuevo arreglo de pares, que contiene las cooredenadas de las ciudades. Para crear este arreglo, se eligen
- * los elementos de A que se encuentran en el rango indicado.
- * Precondición: A.size > 0 && rango > 0
- * Postcondición: \result.size == (A.size-3) && (\forall int i: 0 <= i < \result.size; (\exists int j: 0 <= j < A.size; \result[i] == A[j] )) 
- * 
-*/
-fun nuevoTour(A: Array<Triple<Double, Double, Int>>, rango: IntRange): Array<Triple<Double, Double, Int>> {
-    var i = 0
-    var B = Array(A.size-3){Triple(0.0,0.0,0)}
-    for (par in rango) {
-        B[i] = A[par]
-        i++
-    }
-    return B
+        print(B.contentToString())
+        return B
+    }  
 }
 
 /* Función: tour
@@ -290,78 +216,47 @@ fun nuevoTour(A: Array<Triple<Double, Double, Int>>, rango: IntRange): Array<Tri
  * Postcondición: (\forall int i: 0 <= i < \result.size; x.first != A[i] ||  x.second != A[i]) 
  * 
 */
-fun tour(A: Array<Triple<Double, Double, Int>>, B: Array<Triple<Double, Double, Int>>, x: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>, y: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>): Array<Triple<Double, Double, Int>> {
-    var Ciclo3 = Array(A.size+B.size+4+1){Triple(0.0,0.0, 0)}
-    union(A, Ciclo3, 0)
-    println("Union 1")
-    print(Ciclo3.contentToString())
-    println(".....")
-    var i = A.size-1
-    intercambio(Ciclo3, x, i)
-    println("Intercambio 1")
-    print(Ciclo3.contentToString())
-    println(".....")
-    i = i+3
-    union(B, Ciclo3, i)
-    println("Union 2")
-    print(Ciclo3.contentToString())
-    println(".....")
-    i = B.size-1+i
-    intercambio(Ciclo3, y, i)
-    println("Intercambio 2")
-    print(Ciclo3.contentToString())
-    println(".....")
-    Ciclo3[Ciclo3.size-1] = Ciclo3[0]
+fun tour(A: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>>, B: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>>, 
+x: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>, y: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>): Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> {
+    var Ciclo3 = Array(A.size+B.size+2){Pair(Triple(0.0,0.0, 0), Triple(0.0,0.0, 0))}
+    var contador = 0
+    var corte = 0
+    for (i in 0 until A.size) {
+        if ((A[i].first == x.first || A[i].first == x.second )||(A[i].second == x.first || A[i].second == x.second )) {
+            Ciclo3[contador] = A[i]
+            contador++
+            break
+        } else {
+            Ciclo3[contador] = A[i]
+            contador++
+            corte++
+        }
+    }
+    Ciclo3[contador] = x
+    contador ++
+    for (i in 0 until B.size) {
+        Ciclo3[contador] = B[i]
+        contador++
+    }
+    Ciclo3[contador] = y
+    contador ++
+    for (i  in (corte+1) until A.size) {
+        Ciclo3[contador] = A[i]
+        contador++
+    }
     return Ciclo3
 }
 
-/* Función: union
- * Descripción: Recibe como entrada un arreglo de pares(Array<Pair<Double, Double>>) que contiene las pares con las coordenadas de las ciudades.
- * Recibe otro arreglo (Array<Pair<Double, Double>>) que guardara los elementos de A que se deben unir, ademas tambien ingresa un valor i (Int) que indica
- * desde que posicion se debe empezar a guardar los elementos en el Ciclo.
- * Precondición: A.size > 0 && i >= 0 && Ciclo.size > 0
- * Postcondición: true 
- * 
-*/
-fun union(A: Array<Triple<Double, Double, Int>>, Ciclo: Array<Triple<Double, Double, Int>>, i: Int ) {
-    var j = i
-    for (par in A) {
-        Ciclo[j] = par
-        j++
-    }
-}
-
-/* Función: intecambio
- * Descripción: Recibe como entrada un arreglo de pares(Array<Pair<Double, Double>>) que contiene los elementos del tour a construir,
- * ademas entra un par que contiene dos ciudades(Pair<Pair<Double, Double>, Pair<Double, Double>>) y un numero i que indica
- * la posicion de la ultima ciudad que ha sido agregada
- * La funcion tomara la coordenada de la ultima ciudad agregada a Ciclo3, sacara las distancia entre esa ciudad y las ciudades que hay dentro del par x.
- * Una vez que haya obtenido esas distancias, las compara y determina cual es mayor. 
- * Luego se procede en incluir en el arreglo la ciudad que tenga menor distancia.
- * Precondición: Ciclo3.size > 0 && i >= 0 
- * Postcondición: true
- * 
-*/
-fun intercambio(Ciclo3: Array<Triple<Double, Double, Int>>, x: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>, i: Int) {
-    var j = i
-    var g1 = distancia(Ciclo3[i], x.first)
-    var g2 = distancia(Ciclo3[i], x.second)
-    if (g1 < g2) {
-        j++
-        Ciclo3[j] = x.first 
-        j++
-        Ciclo3[j] = x.second
-    } else {
-        j++
-        Ciclo3[j] = x.second 
-        j++
-        Ciclo3[j] = x.first
-    }
-}
 
 fun main() {
-    var C1 = arrayOf(Pair(1.0,1.0), Pair(0.0,9.0), Pair(3.0,8.0), Pair(4.0,0.0), Pair(1.0,1.0))
-    var C2 = arrayOf(Pair(6.0,6.0), Pair(10.0,7.0), Pair(7.0,3.0),Pair(5.0,1.0), Pair(6.0,6.0))
+    var C1 = arrayOf(Pair(Triple(1.0,1.0,1), Triple(0.0,9.0,2)),Pair(Triple(0.0,9.0,2),Triple(3.0,8.0,3)), Pair(Triple(3.0,8.0,3), Triple(4.0,0.0,4)),
+    Pair(Triple(4.0,0.0,4), Triple(1.0,1.0,1)))
+    var C2 = arrayOf(Pair(Triple(5.0,1.0,9), Triple(6.0,6.0,6)), Pair(Triple(6.0,6.0,6), Triple(10.0,7.0,7)), Pair(Triple(10.0,7.0,7), Triple(7.0,3.0,8)), 
+    Pair(Triple(7.0,3.0,8), Triple(5.0,1.0,9)))
     var C3 = combinarCiclos(C1, C2)
-    println(C3.contentToString())
+    println(C1.size)
+    println(C2.size)
+    for (i in 0 until C3.size) {
+        println(C3[i])
+    }   
 }
