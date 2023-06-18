@@ -7,7 +7,7 @@ import java.io.InputStream
 import java.io.BufferedReader
 
 fun main(args: Array<String>) {
-    println("La instancia a resolver es:" +args[0])
+    println("La instancia a resolver es: " +args[0])
 	var P = obtenerDatosTSP(args[0])
     //var tourSolucion = divideAndConquerAndLocalSearchTSP(P)
     var tourAleatorio = obtenerTourAleatorio(P) // ESTO SE BORRA DESPUÉS, ES PARA PROBAR EL PROGRAMA
@@ -27,8 +27,8 @@ fun generarArchivoSolucionTSPLIB(nombreSalida: String, tourSolucion: Array<Tripl
     var distancia = obtenerDistanciaTour(tourSolucion)
     var tourTSPLIB = obtenerTourTSPLIB(tourSolucion)
     var dimensionTSP = tourTSPLIB.size
-    var archivoSalida = File(args[1])
-    var textoSalida = "NAME: "+args[1]
+    var archivoSalida = File(nombreSalida)
+    var textoSalida = "NAME: "+nombreSalida
     archivoSalida.writeText(textoSalida)
     archivoSalida.appendText("\nCOMMENT: Length "+distancia.toString())
     archivoSalida.appendText("\nTYPE: TOUR")
