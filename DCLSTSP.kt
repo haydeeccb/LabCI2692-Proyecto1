@@ -16,6 +16,7 @@ fun main(args: Array<String>) {
     var tourSolucion = divideAndConquerAndLocalSearchTSP(P)
     println("El tour solución es:")
     println(tourSolucion.contentToString())
+    println("")
     generarArchivoSolucionTSPLIB(args[1], tourSolucion)
 }
 
@@ -125,10 +126,8 @@ fun combinarCiclos(A: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Dou
             var dNEW2 = distancia(b,d)
             var dNEW3 = distancia(a,d)
             var dNEW4 = distancia(b,c)
-
             var g1 = distanciaGanada(dOLD1, dOLD2, dNEW1, dNEW2)
             var g2 = distanciaGanada(dOLD1, dOLD2, dNEW3, dNEW4)
-
             var ganancia = min(g1, g2)
             if (ganancia < minG) {
                 minG = ganancia
@@ -150,23 +149,23 @@ fun combinarCiclos(A: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Dou
             }
         }
     }
-    /*println(".....Agregar....")
+    println(".....Agregar....")
     println(newC1)
     println(newC2)
     println(".......")
     println(".....Eliminar....")
     println(dC1)
     println(dC2)
-    println(".......")*/
+    println(".......")
 
     //eliminar
     var particion1 = remover(A, dC1)
     var particion2 = remover(B, dC2)
-    /*println("..Particiones")
+    println("..Particiones")
     println(particion1.contentToString())
     println(".......")
     println(particion2.contentToString())
-    println("TOUR")*/
+    println("TOUR")
     //agregar
     var Ciclo3 = tour(particion1, particion2, newC1, newC2)
     return Ciclo3
@@ -230,7 +229,7 @@ fun remover(A: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, In
                 j++ 
             }
         }
-        //print(B.contentToString())
+        print(B.contentToString())
         return B
     }  
 }
