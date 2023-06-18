@@ -10,8 +10,6 @@ import java.io.BufferedReader
 fun main(args: Array<String>) {
     println("La instancia a resolver es: " +args[0])
     var P = obtenerDatosTSP(args[0])
-    println("El arreglo de ciudades es:")
-    println(P.contentToString())
     println("")
     var tourSolucion = divideAndConquerAndLocalSearchTSP(P)
     /*println("El tour solución es:")
@@ -145,7 +143,9 @@ fun combinarCiclos(A: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Dou
         }
     }
     // Eliminar lados
+    println("particion 1 en el arreglo ${A.size}")
     var particion1 = remover(A, dC1)
+    println("particion 2 en el arreglo ${B.size}")
     var particion2 = remover(B, dC2)
     // Agregar lados y unir
     var Ciclo3 = tour(particion1, particion2, newC1, newC2, caso1, posicionB)
@@ -193,7 +193,12 @@ fun distanciaGanada(dOLD1: Int, dOLD2: Int, dNEW1: Int, dNEW2: Int): Int {
  * 
 */
 fun remover(A: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>>, x: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>): Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> {
-    if (A.size == 1) {
+    println("elemento en el arreglo ${A.size}")
+    println(A.contentToString())
+    println(x) 
+    if (x == Pair(Triple(0.0,0.0,0),Triple(0.0,0.0,0))) {
+        return A
+    }else if (A.size == 1) {
         var B = Array(0){Pair(Triple(0.0,0.0, 0), Triple(0.0,0.0, 0))}
         return B
     } else if (A.size == 2) {
@@ -201,20 +206,23 @@ fun remover(A: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, In
         B[0] = A[1]
         return B
     } else {
-        var B = Array((A.size)){Pair(Triple(0.0,0.0, 0), Triple(0.0,0.0, 0))}
-        var j = 0
+        var B = Array((A.size-1)){Pair(Triple(0.0,0.0, 0), Triple(0.0,0.0, 0))}
+        var j =0
+        println(B.size)
         for(i in 0 until A.size) {
             var lado = A[i]
             var ciudad1 = lado.first
             var ciudad2 = lado.second
             if ((ciudad1 == x.first || ciudad1 == x.second) && (ciudad2 == x.first || ciudad2 == x.second)) {
+                println("aparece ${j}")
                 continue
             } else {
                 B[j] = lado
                 j++ 
+                println(j)
             }
         }
-        println(j)
+
         return B
     }  
 }
@@ -234,6 +242,7 @@ x: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>, y: Pair<Tripl
     var Ciclo3 = Array(A.size+B.size+2){Pair(Triple(0.0,0.0, 0), Triple(0.0,0.0, 0))}
     var contador = 0
     var corte = 0
+    println("posicion B= ${posicionB}")
     if (A.size != 0) {
         for (i in 0 until A.size) {
             if (A[i].second == x.first) {
@@ -249,18 +258,18 @@ x: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>, y: Pair<Tripl
     } 
     Ciclo3[contador] = x
     contador ++
-    if (B.size != 0 ) {
+    if (B.size != 0 && posicionB != -1) {
         if (caso1 == true) {
-        for (i in posicionB-1 downTo 0) {
-            var tmp1 = Pair(B[i].second, B[i].first)
-            Ciclo3[contador] = tmp1
-            contador++
-        }
-        for (i in B.size-1 downTo posicionB) {
-            var tmp2 = Pair(B[i].second, B[i].first)
-            Ciclo3[contador] = tmp2
-            contador++
-        }
+            for (i in posicionB-1 downTo 0) {
+                var tmp1 = Pair(B[i].second, B[i].first)
+                Ciclo3[contador] = tmp1
+                contador++
+            }
+            for (i in B.size-1 downTo posicionB) {
+                var tmp2 = Pair(B[i].second, B[i].first)
+                Ciclo3[contador] = tmp2
+                contador++
+            }
         } else {
             for (i in posicionB until B.size) {
                 Ciclo3[contador] = B[i]
@@ -1024,12 +1033,11 @@ fun divideAndConquerAndLocalSearchTSP(P: Array<Triple<Double,Double,Int>>) : Arr
 	var c1 = divideAndConquerTSP(P)
 	var distancia1 = obtenerDistanciaTour(c1)
 	println("La distancia del tour obtenido por el algoritmo de Divide-And-Conquer es ${distancia1}")
-    println(c1.contentToString())
     println(" ")
 	var c2 = busquedaLocalCon2OPT(c1)
 	var distancia2OPT = obtenerDistanciaTour(c2)
 	println("La distancia del tour obtenido como solución final es ${distancia2OPT}")
-    println(c2.contentToString())
+   
     println(" ")
 	return c2
 }
