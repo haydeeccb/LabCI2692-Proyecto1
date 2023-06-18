@@ -39,21 +39,8 @@ fun divideAndConquerTSP(A: Array<Triple<Double, Double, Int>>):  Array<Pair<Trip
         return cicloTresCiudades(A)
     } else {
         var (pIzquierda,pDerecha) = obtenerParticiones(A)
-        println("Particion izquierda")
-        println(pIzquierda.contentToString())
-        println("Particion derecha")
-        println(pDerecha.contentToString())
-        println("Espacio antes de la primera llamada recursiva")
-        println(" ")
         var C1 = divideAndConquerTSP(pIzquierda)
-        println("Ciclo 1")
-        println(C1.contentToString())
-        println("Espacio antes de la segunda llamada recursiva")
-        println(" ")
         var C2 = divideAndConquerTSP(pDerecha)
-        println("Ciclo 2")
-        println(C2.contentToString())
-        println("")
         return combinarCiclos(C1, C2)
     }   
 }
@@ -112,6 +99,8 @@ fun combinarCiclos(A: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Dou
     var newC2: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>> = Pair(Triple(0.0, 0.0, 0), Triple(0.0, 0.0, 0))
     var dC1: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>> = Pair(Triple(0.0, 0.0, 0), Triple(0.0, 0.0, 0))
     var dC2: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>> = Pair(Triple(0.0, 0.0, 0), Triple(0.0, 0.0, 0))
+    var caso1 = true
+    var posicionB = -1 
     for (i in 0 until A.size-1) {
         var lado1 = A[i]
         var a = lado1.first
@@ -131,47 +120,32 @@ fun combinarCiclos(A: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Dou
             var ganancia = min(g1, g2)
             if (ganancia < minG) {
                 minG = ganancia
+                posicionB = j 
                 if (g1 < g2) {
                     //agregar lados
                     newC1 = Pair(a, c)
                     // agregar lados
                     newC2 = Pair(b, d)
+                    caso1 = true
                 } else {
                     //agregar lados
                     newC1 = Pair(a, d)
                     // agregar lados
                     newC2 = Pair(b, c)
+                    caso1 = false
                 }
-                //elimnar lados
+                // Eliminar lados
                 dC1 = Pair (a, b)
-                //elimanr lados
+                // Eliminar lados
                 dC2 = Pair(c, d)
             }
         }
     }
-    println("Agregar")
-    println(newC1)
-    println(newC2)
-    println(" ")
-    println("Eliminar")
-    println(dC1)
-    println(dC2)
-    println("")
-
-    //eliminar
+    // Eliminar lados
     var particion1 = remover(A, dC1)
     var particion2 = remover(B, dC2)
-    println("Particiones 1 y 2")
-    println(particion1.contentToString())
-    println(" ")
-    println(particion2.contentToString())
-    println(" ")
-    println("Se aplica la función tour")
-    //agregar
-    var Ciclo3 = tour(particion1, particion2, newC1, newC2)
-    println("Ciclo 3 (combinarCiclos)")
-    println(Ciclo3.contentToString())
-    println("")
+    // Agregar lados y unir
+    var Ciclo3 = tour(particion1, particion2, newC1, newC2, caso1, posicionB)
     return Ciclo3
 }
 
@@ -218,7 +192,7 @@ fun distanciaGanada(dOLD1: Int, dOLD2: Int, dNEW1: Int, dNEW2: Int): Int {
 fun remover(A: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>>, x: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>): Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> {
     if (A.size == 2) {
         var B = Array(1){Pair(Triple(0.0,0.0, 0), Triple(0.0,0.0, 0))}
-        B[0] = A[0]
+        B[0] = A[1]
         return B
     } else {
         var B = Array((A.size-1)){Pair(Triple(0.0,0.0, 0), Triple(0.0,0.0, 0))}
@@ -249,12 +223,12 @@ fun remover(A: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, In
  * 
 */
 fun tour(A: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>>, B: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>>, 
-x: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>, y: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>): Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> {
+x: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>, y: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>, caso1: Boolean, posicionB: Int): Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> {
     var Ciclo3 = Array(A.size+B.size+2){Pair(Triple(0.0,0.0, 0), Triple(0.0,0.0, 0))}
     var contador = 0
     var corte = 0
     for (i in 0 until A.size) {
-        if ((A[i].first == x.first || A[i].first == x.second )||(A[i].second == x.first || A[i].second == x.second )) {
+        if (A[i].second == x.first) {
             Ciclo3[contador] = A[i]
             contador++
             break
@@ -266,12 +240,30 @@ x: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>, y: Pair<Tripl
     }
     Ciclo3[contador] = x
     contador ++
-    for (i in 0 until B.size) {
-        Ciclo3[contador] = B[i]
-        contador++
+    if (caso1 == true) {
+        for (i in posicionB-1 downTo 0) {
+            var tmp1 = Pair(B[i].second, B[i].first)
+            Ciclo3[contador] = tmp1
+            contador++
+        }
+        for (i in B.size-1 downTo posicionB) {
+            var tmp2 = Pair(B[i].second, B[i].first)
+            Ciclo3[contador] = tmp2
+            contador++
+        }
+    } else {
+        for (i in posicionB until B.size) {
+            Ciclo3[contador] = B[i]
+            contador++
+        }
+        for (i in 0 until posicionB){
+            Ciclo3[contador] = B[i]
+            contador++
+        }
     }
-    Ciclo3[contador] = y
-    contador ++
+    var tmp3 = Pair(y.second, y.first)
+    Ciclo3[contador] = tmp3
+    contador++
     for (i  in (corte+1) until A.size) {
         Ciclo3[contador] = A[i]
         contador++
@@ -714,7 +706,6 @@ fun esElPrimerRectangulo(P: Array<Triple<Double,Double,Int>>, rectangulo: Array<
  */ 
 fun obtenerPuntosPrimerRectangulo(P: Array<Triple<Double,Double,Int>>, rectangulo: Array<Pair<Double,Double>>): Array<Triple<Double,Double,Int>> {
 	var n = P.size
-    println(P.contentToString())
 	var k = 0
 	var tmp = Array(n, {0})
 	for (i in 0 until n) {
