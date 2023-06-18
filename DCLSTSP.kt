@@ -88,11 +88,11 @@ fun cicloTresCiudades(A:  Array<Triple<Double, Double, Int>>): Array<Pair<Triple
 */
 fun combinarCiclos(A: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>>, B: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>>): 
     Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> {
-    when (A.size) {
-        0 -> return B
+    if (A.size == 0) {
+        return B
     }
-    when (B.size) {
-        0 -> return A
+    if (B.size == 0) {
+        return A
     }
     var minG = Int.MAX_VALUE;
     var newC1: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>> = Pair(Triple(0.0, 0.0, 0), Triple(0.0, 0.0, 0))
@@ -190,12 +190,15 @@ fun distanciaGanada(dOLD1: Int, dOLD2: Int, dNEW1: Int, dNEW2: Int): Int {
  * 
 */
 fun remover(A: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>>, x: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>): Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> {
-    if (A.size == 2) {
+    if (A.size == 1) {
+        var B = Array(0){Pair(Triple(0.0,0.0, 0), Triple(0.0,0.0, 0))}
+        return B
+    } else if (A.size == 2) {
         var B = Array(1){Pair(Triple(0.0,0.0, 0), Triple(0.0,0.0, 0))}
         B[0] = A[1]
         return B
     } else {
-        var B = Array((A.size-1)){Pair(Triple(0.0,0.0, 0), Triple(0.0,0.0, 0))}
+        var B = Array((A.size)){Pair(Triple(0.0,0.0, 0), Triple(0.0,0.0, 0))}
         var j = 0
         for(i in 0 until A.size) {
             var lado = A[i]
@@ -204,10 +207,11 @@ fun remover(A: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, In
             if ((ciudad1 == x.first || ciudad1 == x.second) && (ciudad2 == x.first || ciudad2 == x.second)) {
                 continue
             } else {
-                B[j] = A[i]
+                B[j] = lado
                 j++ 
             }
         }
+        println(j)
         return B
     }  
 }
@@ -227,20 +231,23 @@ x: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>, y: Pair<Tripl
     var Ciclo3 = Array(A.size+B.size+2){Pair(Triple(0.0,0.0, 0), Triple(0.0,0.0, 0))}
     var contador = 0
     var corte = 0
-    for (i in 0 until A.size) {
-        if (A[i].second == x.first) {
-            Ciclo3[contador] = A[i]
-            contador++
-            break
-        } else {
-            Ciclo3[contador] = A[i]
-            contador++
-            corte++
+    if (A.size != 0) {
+        for (i in 0 until A.size) {
+            if (A[i].second == x.first) {
+                Ciclo3[contador] = A[i]
+                contador++
+                break
+            } else {
+                Ciclo3[contador] = A[i]
+                contador++
+                corte++
+            }
         }
-    }
+    } 
     Ciclo3[contador] = x
     contador ++
-    if (caso1 == true) {
+    if (B.size != 0 ) {
+        if (caso1 == true) {
         for (i in posicionB-1 downTo 0) {
             var tmp1 = Pair(B[i].second, B[i].first)
             Ciclo3[contador] = tmp1
@@ -251,22 +258,26 @@ x: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>, y: Pair<Tripl
             Ciclo3[contador] = tmp2
             contador++
         }
-    } else {
-        for (i in posicionB until B.size) {
-            Ciclo3[contador] = B[i]
-            contador++
-        }
-        for (i in 0 until posicionB){
-            Ciclo3[contador] = B[i]
-            contador++
+        } else {
+            for (i in posicionB until B.size) {
+                Ciclo3[contador] = B[i]
+                contador++
+            }
+            for (i in 0 until posicionB){
+                Ciclo3[contador] = B[i]
+                contador++
+            }
         }
     }
+    
     var tmp3 = Pair(y.second, y.first)
     Ciclo3[contador] = tmp3
     contador++
-    for (i  in (corte+1) until A.size) {
-        Ciclo3[contador] = A[i]
-        contador++
+    if (A.size != 0){
+        for (i  in (corte+1) until A.size) {
+            Ciclo3[contador] = A[i]
+            contador++
+        }
     }
     return Ciclo3
 }
