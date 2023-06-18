@@ -638,7 +638,7 @@ fun invertirTour(tour: Array<Pair<Triple<Double,Double,Int>, Triple<Double,Doubl
 	var tmp = Array(n, {Pair(Triple(0.0, 0.0, 0), Triple(0.0, 0.0, 0))})
 	var k = q
 	for (i in 0 until n) {
-		tmp[i] = tour[k]
+		tmp[i] = Pair(tour[k].second, tour[k].first)
 		k = k-1
 	}
 	k = 0
