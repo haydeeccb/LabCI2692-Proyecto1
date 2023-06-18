@@ -10,8 +10,8 @@ fun main(args: Array<String>) {
     println("La instancia a resolver es: " +args[0])
 	var P = obtenerDatosTSP(args[0])
     //var tourSolucion = divideAndConquerAndLocalSearchTSP(P)
-    var tourAleatorio = obtenerTourAleatorio(P) // ESTO SE BORRA DESPUÉS, ES PARA PROBAR EL PROGRAMA
-    generarArchivoSolucionTSPLIB(args[1], tourAleatorio) // AQUÍ LUEGO SE DEBE PONER COMO PARÁMETRO EL TOUR SOLUCIÓN
+    var tourOrdenado = obtenerTourOrdenado(P) // ESTO SE BORRA DESPUÉS, ES PARA PROBAR EL PROGRAMA
+    generarArchivoSolucionTSPLIB(args[1], tourOrdenado) // AQUÍ LUEGO SE DEBE PONER COMO PARÁMETRO EL TOUR SOLUCIÓN
 }
 
 // Procedimiento para generar el archivo de salida con la solución del problema TSP, en formato TSPLIB
@@ -23,7 +23,7 @@ fun main(args: Array<String>) {
  * Precondición: nombreSalida != null && tourSolucion.size >= 2
  * Postondición: true
  */ 
-fun generarArchivoSolucionTSPLIB(nombreSalida: String, tourSolucion: Array<Triple<Double,Double,Int>>) {
+fun generarArchivoSolucionTSPLIB(nombreSalida: String, tourSolucion: Array<Pair<Triple<Double,Double,Int>, Triple<Double,Double,Int>>>) {
     var distancia = obtenerDistanciaTour(tourSolucion)
     var tourTSPLIB = obtenerTourTSPLIB(tourSolucion)
     var dimensionTSP = tourTSPLIB.size
@@ -44,15 +44,16 @@ fun generarArchivoSolucionTSPLIB(nombreSalida: String, tourSolucion: Array<Tripl
 // Función para convertir el tour solución al formato TSPLIB
 
 /* Función: obtenerTourTSPLIB
- * Descripción: Recibe un tour: Array<Triple<Double,Double,Int>> y retorna un tour de strings que contiene 
- * sólo los números de las ciudades, es decir, está en formato TSPLIB
- * Precondición: tour.size >= 2
+ * Descripción: Recibe un tour: tour: Array<Pair<Triple<Double,Double,Int>, Triple<Double,Double,Int>>>
+ * y retorna un tour de strings que contiene sólo los números de las ciudades del tour original y en orden, 
+ * es decir, está en formato TSPLIB
+ * Precondición: tour.size >= 1
  * Postondición: \result.size >= 1
  */ 
-fun obtenerTourTSPLIB(tour: Array<Triple<Double,Double,Int>>): Array<String> {
-	var tourTSPLIB = Array(tour.size-1, {""})
-	for(i in 0 until tour.size-1) {
-		tourTSPLIB[i] = (tour[i].third).toString()
+fun obtenerTourTSPLIB(tour: Array<Pair<Triple<Double,Double,Int>, Triple<Double,Double,Int>>>): Array<String> {
+	var tourTSPLIB = Array(tour.size, {""})
+	for(i in 0 until tour.size) {
+		tourTSPLIB[i] = ((tour[i].first).third).toString()
 	}
 	return tourTSPLIB
 }
@@ -128,7 +129,7 @@ fun obtenerDatosTSP(A: String): Array<Triple<Double,Double,Int>> {
  * Descripción: Recibe dos coordenadas de puntos y retorna la distancia euclidiana entre dichos puntos, redondeada a un entero
  * Las coordenadas x,y de los puntos corresponden a las dos primeras coordendas de un triple
  * Precondición: true
- * Postondición: \result = (sqrt((Punto2.first - Punto1.first)*(Punto2.first - Punto1.first) + (Punto2.second - Punto1.second)*(Punto2.second - Punto1.second))).roundToInt()
+ * Postondición: \result == (sqrt((Punto2.first - Punto1.first)*(Punto2.first - Punto1.first) + (Punto2.second - Punto1.second)*(Punto2.second - Punto1.second))).roundToInt()
  */ 
 fun distanciaDosPuntos(Punto1: Triple<Double,Double,Int>, Punto2: Triple<Double,Double,Int>): Int {
     var xd = Punto2.first - Punto1.first
@@ -138,33 +139,27 @@ fun distanciaDosPuntos(Punto1: Triple<Double,Double,Int>, Punto2: Triple<Double,
 }
 
 /* Función: obtenerDistanciaTour
- * Descripción: Recibe un tour: Array<Pair<Double,Double>>, y retorna la distancia del tour
- * Precondición: (\forall int i; 0 <= i && i < tour.size; 1 <= tour[i] && tour[i] <= P.size)
- * Postondición: \result == \sum(int i; 0 <= i < tour.size - 1; (sqrt((tour[i+1].first - tour[i].first)*(tour[i+1].first - tour[i].first) + (tour[i].second - tour[i].second)*(tour[i].second - tour[i].second))).roundToInt())
+ * Descripción: Recibe un tour: tour: Array<Pair<Triple<Double,Double,Int>, Triple<Double,Double,Int>>> 
+ * y retorna la distancia del tour
+ * Precondición: tour.size >= 1
+ * Postondición: \result == \sum int i; 0 <= i && i < tour.size; distanciaDosPuntos(tour[i].first, tour[i].second)
  */ 
-fun obtenerDistanciaTour(tour: Array<Triple<Double,Double,Int>>): Int {
-    var n = tour.size
+fun obtenerDistanciaTour(tour: Array<Pair<Triple<Double,Double,Int>, Triple<Double,Double,Int>>>): Int {
     var distancia = 0
-    for (i in 0 until n-1) {
-        distancia = distancia + distanciaDosPuntos(tour[i], tour[i+1])
+    for (i in 0 until tour.size) {
+        distancia = distancia + distanciaDosPuntos(tour[i].first, tour[i].second)
     }
     return distancia
 }
 
 // EXTRA PARA PROBAR LA ESCRITURA
 
-// Para generar tours aleatorios
-fun obtenerTourAleatorio(A: Array<Triple<Double, Double,Int>>): Array<Triple<Double, Double,Int>> {
-    var B = Array(A.size){i -> i}
-    var C: Array<Triple<Double, Double,Int>> = Array(A.size+1){Triple(0.0, 0.0, 0)}
-    for (i in 0 until A.size) {
-        var x = (0 until A.size).random()
-        while(B[x] == -1) {
-            x = (0 until A.size).random()
-        }
-        B[x] = -1
-        C[i] = A[x]
+// Para generar un tour ordenado
+fun obtenerTourOrdenado(A: Array<Triple<Double, Double,Int>>): Array<Pair<Triple<Double,Double,Int>, Triple<Double,Double,Int>>> {
+    var C = Array(A.size, {Pair(Triple(0.0, 0.0, 0), Triple(0.0, 0.0, 0))})
+    for (i in 0 until A.size-1) {
+        C[i] = Pair(A[i], A[i+1])
     }
-    C[A.size] = C[0]
+    C[A.size-1] = Pair(A[A.size-1], A[0])
     return C
 }
