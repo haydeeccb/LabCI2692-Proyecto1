@@ -31,7 +31,10 @@ fun main(args: Array<String>) {
 */
 fun divideAndConquerTSP(P: Array<Triple<Double, Double, Int>>):  Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> {
     var n = P.size
-    if (n == 1) {
+    if (n == 0) {
+        var C = Array(0){Pair(Triple(0.0,0.0,0), Triple(0.0,0.0,0))}
+        return C
+    } else if (n == 1) {
         return cicloUnaCiudad(P)
     } else if (n ==2) {
         return cicloDosCiudades(P)
