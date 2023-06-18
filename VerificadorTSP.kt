@@ -4,54 +4,94 @@ import java.io.Reader
 import java.io.InputStream
 import java.io.BufferedReader
 fun main(A: Array<String>){
+    // Obtencion de arreglo con las coordenadas
     var P = obtenerDatosTSP(A[0])
+
+    // Conteo de elementos en el archivo solucion y creacion del arreglo contenedor de este
     var i = 0
     File(A[1]).forEachLine {line -> i++}
     var B = Array(i){""}
     i = 0
     File(A[1]).forEachLine {line -> B[i++] = line}
+    //Creacion de arreglo que contiene el tour
     var C = datos(B, P.size)
+    // Verificacion de casos
+
+    // Al repetirse un elemento o estar incompleto el tour no es posible sacar su distancia
+    if (repeticion(C.first, P.size) || incompleto(C.first, P.size) || primerElemento(C.first)) {
+        println("Imposible obtener una distancia correcta para este")
+        println("Verifique que todos los datos del tour estan correctos")
+    } else {
+        ultimoElemento(C.first) 
+        var nuevoTour = convertirTour(P, C.first)
+        var distanciaT = obtenerDistanciaTour(nuevoTour)
+        println(distanciaT)
+        if (distanciaT == C.second) {
+            println("Distacia correcta")
+        }else {
+            println("Distacia incorrecta")
+        }
+    }
 }
-fun datos(A: Array<String>, x: Int): Array<Int> {
-    var B = Array(x+1){0} 
+/* Función: datos
+ * Descripción: Recibe de entrada un arreglo de String, este arreglo posee las lineas del archivo solucion 
+ * y número que indicara el tamaño del arreglo de Int que se va crear. Este arreglo que se creara sera el tour que contiene el archivo solución.
+ * El programa verificara si el formato del archivo tiene forma  de TSPLIB, indicara si falta algun dato y devolvera un par que tendra 
+ * como primer elemento el tour y de segundo elemento la longitud del tour.
+ * Precondición: A.size > 0 && x > 0
+ * Postcondición:\result.first.size > 0 && \result.second >= 0
+ */
+fun datos(A: Array<String>, x: Int): Pair<Array<Int>, Int> {
+    var B = Array(x+2){0} 
     var j = 0
     var longitud = 0
     var check = 0
     for (i in 0 until 5) {
-        if (A[i].length  < x.toString().length) {
+        if(A[i].length == 1) {
+            break
+        } else if (A[i].length  < x.toString().length) {
             continue
         } else if (A[i].substring(0,5) == "NAME "){
             check++
-            println("E1 ")
         } else if(A[i].substring(0,8) == "COMMENT ") {
             check++
-            println("2 ")
-            longitud = A[i].substring(17,A[i].length).toInt()
+            if (A[i].length < 17) {
+                longitud = A[i].substring(10,A[i].length).toInt()
+            } else {
+                longitud = A[i].substring(17,A[i].length).toInt()
+            }
         } else if(A[i].substring(0,5) == "TYPE ") {
             check++
-            println("E3 ")
         } else if(A[i].substring(0,10) == "DIMENSION " ) {
             check++
-            println("E4 ")
         } else if(A[i].substring(0,A[i].length) == "TOUR_SECTION") {
             check++
-            println("E5 ")
-        } else (
+        } else {
             continue
-        )
+        }
     }
     if (check != 5) {
         println("Error en el formato de TSPLIB ")
+        println("Verifique si falta algun dato de información ")
     }
     println(longitud)
     for (i in check until A.size) {
-        B[j] = A[i].toInt()
-        j++
+        if (A[i] == "EOF") {
+            B[j] = -2
+        } else {
+            B[j] = A[i].toInt()
+            j++
+        } 
     }
-    println(B.contentToString())
-    return B
+    return Pair(B, longitud)
 }
-
+/* Función: obtenerDatosTSP
+ * Descripción: Esta función recibe y procesa los datos del archivo de entrada en formato TSPLIB y retorna un arreglo 
+ * de coordenadas Array<Triple<Double,Double,Int>> que contiene en \result[i] los datos de la ciudad número i en el siguiente
+ * orden: coordenada x, coordenada y, número de la ciudad
+ * Precondición: A: != null
+ * Postondición: \result.size >= 1
+ */ 
 fun obtenerDatosTSP(A: String): Array<Triple<Double,Double,Int>> {
     var i = 0
     var j = 0
@@ -109,37 +149,36 @@ fun obtenerDatosTSP(A: String): Array<Triple<Double,Double,Int>> {
     }
     return C
 }
-
 /* Función: repeticion
  * Descripción: Recibe de entrada un arreglo de enteros(solución del ciclo) y un número que indicara cuantas ciudades hay en el ciclo.
- * En caso que se consiga un elemento repetido este debera indicar que ciudad se repite y el programa terminara.
+ * En caso que se consiga un elemento repetido este debera indicar que ciudad se repite, el programa terminara y debera regresar FALSE.
  * En caso contrario el programa seguira sin ningun inconveniente.
  * Precondición: A.size > 0 && indicador > 0
- * Postcondición: true 
-*/
-fun repeticion(A: Array<Int>, indicador: Int) {
+ * Postcondición: \result == true || \result == false
+ */
+fun repeticion(A: Array<Int> , indicador: Int): Boolean {
     var C = Array(indicador+1){0}
     for (i in 0 until indicador) {
         C[A[i]] = C[A[i]] + 1
     }
     
-    for (i in 0 until C.size) {
+    for (i in 1 until C.size) {
         if (C[i] > 1) {
             println("Se esta repitiendo la ciudad ${i}")
-            return
+            return false
         }
     }
     println("No hay repeticiones")
+    return true
 }
-
 /* Función: incompleto
  * Descripción: Recibe de entrada un arreglo de enteros(solución del TSP) y un número que indicara cuantas ciudades hay en el ciclo.
- * En caso que se consiga un elemento faltante este debera indicar que ciudad falta y el programa terminara.
- * En caso contrario el programa seguira sin ningun inconveniente.
+ * En caso que se consiga un elemento faltante este debera indicar que ciudad falta, el programa terminara y debera regresar FALSE.
+ * En caso contrario el programa seguira sin ningun inconveniente y devolvera TRUE.
  * Precondición: A.size > 0 && indicador > 0
- * Postcondición: \result.size == A.size + 1 && (\forall int i; 0 <= i < \result.size; (\exists int j: 0 <= j < A.size; \result[i] == A[j] )) 
-*/
-fun incompleto(A: Array<Int>, indicador: Int){
+ * Postcondición: \result == true || \result == false
+ */
+fun incompleto(A: Array<Int>, indicador: Int): Boolean{
     var C = Array(indicador+1){0}
     for (i in 0 until indicador) {
         C[A[i]] = C[A[i]] + 1
@@ -148,53 +187,96 @@ fun incompleto(A: Array<Int>, indicador: Int){
     for (i in 1 until C.size) {
         if (C[i] == 0) {
             println("Falta la ciudad ${i}")
-            return
+            return false
         }
     }
     println("No esta incompleto")
+    return true
 }
-
 /* Función: ultimoElemento
  * Descripción: Recibe de entrada un arreglo de enteros(solución del TSP) y verifica si el ultimo elemento del arreglo sea -1.
  * Precondición: A.size > 0 
  * Postcondición: true 
-*/
+ */
 fun ultimoElemento(A: Array<Int>) {
-    if (A[A.size-1] != -1) {
-        println("Falto indicar si termino el tour")
+    if (A[A.size-1] != -2 && A[A.size-2] != -2 ) {
+        println("Falta indicar el EOF para cumplir los requisitos de un archivo en forma TSPLIB")
+    }
+    if (A[A.size-2] != -1) {
+        println("Falta indicar como ultimo elemento el -1")
         return 
     }
-    println("El ultimo elemento es -1")
+    println("Cumple que termine en -1 el tour")
 }
-
 /* Función: primerElemento
  * Descripción: Recibe de entrada un arreglo de enteros(solución del TSP) y verifica su primer elemento empiece en 1.
  * Precondición: A.size > 0
  * Postcondición: true
-*/
-fun primerElemento(A: Array<Int>) {
+ */
+fun primerElemento(A: Array<Int>): Boolean {
     if (A[0] != 1) {
         println("La solución no inicia en la primera ciudad")
-        return
+        return false
     }
     println("Se cumple el primer elemento")
+    return true
+}
+/* Función: obtenerDistanciaTour
+ * Descripción: Recibe un tour: tour: Array<Pair<Triple<Double,Double,Int>, Triple<Double,Double,Int>>> 
+ * y retorna la distancia del tour
+ * Precondición: tour.size >= 1
+ * Postondición: \result == \sum int i; 0 <= i && i < tour.size; distanciaDosPuntos(tour[i].first, tour[i].second)
+ */ 
+fun obtenerDistanciaTour(tour: Array<Pair<Triple<Double,Double,Int>, Triple<Double,Double,Int>>>): Int {
+	var distancia = 0
+	for (i in 0 until tour.size) {
+		distancia = distancia + distanciaDosPuntos(tour[i].first, tour[i].second)
+	}
+	return distancia
+}
+/* Función: distanciaDosPuntos
+ * Descripción: Recibe dos coordenadas de puntos y retorna la distancia euclidiana entre dichos puntos, redondeada a un entero
+ * Las coordenadas x,y de los puntos corresponden a las dos primeras coordendas de un triple
+ * Precondición: true
+ * Postondición: \result == (sqrt((Punto2.first - Punto1.first)*(Punto2.first - Punto1.first) + (Punto2.second - Punto1.second)*(Punto2.second - Punto1.second))).roundToInt()
+ */ 
+fun distanciaDosPuntos(Punto1: Triple<Double,Double,Int>, Punto2: Triple<Double,Double,Int>): Int {
+	var xd = Punto2.first - Punto1.first
+	var yd = Punto2.second - Punto1.second
+	var d = Math.sqrt(xd*xd + yd*yd)
+	return d.roundToInt()
 }
 
-/* Función: distancia
- * Descripción: Recibe dos arreglos con datos tipos Double, el primer arreglo son las coordenadas X de las ciudades
- * y el segundo arreglo son las coordenadas Y.El tercer arreglo que recibe es la solución del tour.
- * Precondición: hilera1.size > 0 && hilera2.size > 0 && solucion.size > 0 && hilera1.size == hilera2.size 
- * Postcondición: \result == (\sum int i; 0 <= i < (solucion.size-1); Math.sqrt((hilera1[i] - hilera1[i+1])*(hilera1[i] - hilera1[i+1])+(hilera2[i] - hilera2[i+1])*(hilera2[i] - hilera2[i+1])).roundToInt()) 
-*/
-fun distancia(hilera1: Array<Double>, hilera2: Array<Double>, solucion: Array<Int>): Int {
-    var distancia = 0
-    for (i in 0 until solucion.size-1) {
-        var p = solucion[i]
-        var q = solucion[i+1]
-        var xd: Double = hilera1[p] - hilera1[q]
-        var yd: Double = hilera2[p] - hilera2[q] 
-        var dxy = Math.sqrt(xd*xd+yd*yd).roundToInt()
-        distancia = distancia + dxy
+/* Función: convertirTour
+ * Descripción: Recibe un arreglo que contiene una tripleta con las coordenadas de una ciudad y su posicion (coordenadas)
+ * y el segundo arreglo contiene las posiciones del tour que nos brinda el archivo solución (tour).
+ * La función se encarga de crear un arreglo que contiene los lados del tour, para esto se crea un nuevo arreglo que almacenera esas coordenadas
+ * y con las posiciones que nos brinda tour verificaremos su valor gracias al arreglo de coordenadas. De esta podremos contruir los lados/pares del tour.
+ * Precondición: coordenadas.size > 0 && tour.size > 0 
+ * Postcondición: (\forall int i; 0 <= i < (tour.size-2);(\exist int j; 0 <= j < coordenadas.size; \result[i].first == coordenadas[j] || \result[i].second == coordenadas[j]))
+ */
+
+fun convertirTour(coordenadas: Array<Triple<Double,Double,Int>>, tour: Array<Int>): 
+    Array<Pair<Triple<Double,Double,Int>, Triple<Double,Double,Int>>>{
+
+    var nTour = Array((tour.size-2)){Pair(Triple(0.0,0.0,0), Triple(0.0,0.0,0))}
+    var j = 0
+    for(i in 1 until tour.size-2) {
+        var ciudad1 = Triple(0.0,0.0,0)
+        var ciudad2 = Triple(0.0,0.0,0)
+        for (ciudad in coordenadas) {
+            if (tour[i] == ciudad.third) {
+                ciudad1 = ciudad
+            }
+            if (tour[i-1] == ciudad.third) {
+                ciudad2 = ciudad
+            }
+        }
+        nTour[j] = Pair(ciudad2, ciudad1)
+        j++
     }
-    return distancia
+
+    nTour[(nTour.size-1)] = Pair(nTour[(nTour.size-2)].second, nTour[0].first)
+    println(nTour.contentToString())
+    return nTour
 }
