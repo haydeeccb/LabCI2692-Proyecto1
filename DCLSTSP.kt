@@ -10,9 +10,9 @@ import java.io.BufferedReader
 fun main(args: Array<String>) {
     println("La instancia a resolver es: " +args[0])
     var P = obtenerDatosTSP(args[0])
-    /*println("El arreglo de ciudades es:")
+    println("El arreglo de ciudades es:")
     println(P.contentToString())
-    println("")*/
+    println("")
     var tourSolucion = divideAndConquerAndLocalSearchTSP(P)
     /*println("El tour solución es:")
     println(tourSolucion.contentToString())
@@ -38,9 +38,6 @@ fun divideAndConquerTSP(P: Array<Triple<Double, Double, Int>>):  Array<Pair<Trip
     } else if (n == 3) {
         return cicloTresCiudades(P)
     } else {
-        println("P")
-        println(P.contentToString())
-        println(" ")
         var (pIzquierda,pDerecha) = obtenerParticiones(P)
         var C1 = divideAndConquerTSP(pIzquierda)
         var C2 = divideAndConquerTSP(pDerecha)
@@ -125,15 +122,15 @@ fun combinarCiclos(A: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Dou
                 minG = ganancia
                 posicionB = j 
                 if (g1 < g2) {
-                    //agregar lados
+                    // Agregar lados
                     newC1 = Pair(a, c)
                     // agregar lados
                     newC2 = Pair(b, d)
                     caso1 = true
                 } else {
-                    //agregar lados
+                    // Agregar lados
                     newC1 = Pair(a, d)
-                    // agregar lados
+                    // Agregar lados
                     newC2 = Pair(b, c)
                     caso1 = false
                 }
@@ -272,7 +269,6 @@ x: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>, y: Pair<Tripl
             }
         }
     }
-    
     var tmp3 = Pair(y.second, y.first)
     Ciclo3[contador] = tmp3
     contador++
@@ -875,13 +871,10 @@ fun obtenerParticiones(P: Array<Triple<Double,Double,Int>>): Pair< Array<Triple<
 	var rectangulo = obtenerRectangulo(P)
 	var (Xdim, Ydim) = obtenerDimensionesRectangulo(rectangulo)
 	var ejeDeCorte: String
-	var eje: String
 	if(Xdim > Ydim) {
 		ejeDeCorte = "X"
-		eje = "X"
 	} else {
 		ejeDeCorte = "Y"
-		eje = "Y"
 	}
 	var (Xc, Yc) = obtenerPuntoDeCorte(P, ejeDeCorte)
 	var (rectanguloIzq, rectanguloDer) = aplicarCorte(ejeDeCorte, Pair(Xc, Yc), rectangulo)
@@ -900,8 +893,8 @@ fun obtenerParticiones(P: Array<Triple<Double,Double,Int>>): Pair< Array<Triple<
 		particionIzq = obtenerPuntosRectangulo(P, rectanguloIzq)
 		particionDer = obtenerPuntosRectangulo(P, rectanguloDer)
 		if ((particionIzq.size == 0 && particionDer.size > 3) || (particionDer.size == 0 && particionIzq.size > 3)) {
-			Xc = obtenerPuntoDeCorteMitad(rectangulo, eje).first
-			Yc = obtenerPuntoDeCorteMitad(rectangulo, eje).second
+			Xc = obtenerPuntoDeCorteMitad(rectangulo, ejeDeCorte).first
+			Yc = obtenerPuntoDeCorteMitad(rectangulo, ejeDeCorte).second
 			rectanguloIzq = aplicarCorte(ejeDeCorte, Pair(Xc, Yc), rectangulo).first
 			rectanguloDer = aplicarCorte(ejeDeCorte, Pair(Xc, Yc), rectangulo).second
 			particionIzq = obtenerPuntosRectangulo(P, rectanguloIzq)
