@@ -10,12 +10,14 @@ import java.io.BufferedReader
 fun main(args: Array<String>) {
     println("La instancia a resolver es: " +args[0])
     var P = obtenerDatosTSP(args[0])
-    println("")
+    println(" ")
+    /*println("La ciudad P es ")
+    println(P.contentToString())*/
     var tourSolucion = divideAndConquerAndLocalSearchTSP(P)
-    /*println("El tour solución es:")
+    println("El tour solución es:")
     println(tourSolucion.contentToString())
     println("")
-    generarArchivoSolucionTSPLIB(args[1], tourSolucion)*/
+    //generarArchivoSolucionTSPLIB(args[1], tourSolucion)
 }
 
 /* ALGORITMOS 1 y 3 DEL PROBLEMA DEL TSP
@@ -30,7 +32,7 @@ fun main(args: Array<String>) {
 fun divideAndConquerTSP(P: Array<Triple<Double, Double, Int>>):  Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> {
     var n = P.size
     if (n == 0) {
-        var C = Array(0){Pair(Triple(0.0,0.0,0), Triple(0.0,0.0,0))}
+        var C = Array(0){Pair(Triple(-1.0,-1.0,0), Triple(-1.0,-1.0,0))}
         return C
     } else if (n == 1) {
         return cicloUnaCiudad(P)
@@ -96,10 +98,10 @@ fun combinarCiclos(A: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Dou
         return A
     }
     var minG = Int.MAX_VALUE;
-    var newC1: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>> = Pair(Triple(0.0, 0.0, 0), Triple(0.0, 0.0, 0))
-    var newC2: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>> = Pair(Triple(0.0, 0.0, 0), Triple(0.0, 0.0, 0))
-    var dC1: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>> = Pair(Triple(0.0, 0.0, 0), Triple(0.0, 0.0, 0))
-    var dC2: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>> = Pair(Triple(0.0, 0.0, 0), Triple(0.0, 0.0, 0))
+    var newC1: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>> = Pair(Triple(-2.0, -2.0, 0), Triple(-2.0, -2.0, 0))
+    var newC2: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>> = Pair(Triple(-2.0, -2.0, 0), Triple(-2.0, -2.0, 0))
+    var dC1: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>> = Pair(Triple(-2.0, -2.0, 0), Triple(-2.0, -2.0, 0))
+    var dC2: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>> = Pair(Triple(-2.0, -2.0, 0), Triple(-2.0, -2.0, 0))
     var caso1 = true
     var posicionB = -1 
     for (i in 0 until A.size-1) {
@@ -143,9 +145,7 @@ fun combinarCiclos(A: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Dou
         }
     }
     // Eliminar lados
-    println("particion 1 en el arreglo ${A.size}")
     var particion1 = remover(A, dC1)
-    println("particion 2 en el arreglo ${B.size}")
     var particion2 = remover(B, dC2)
     // Agregar lados y unir
     var Ciclo3 = tour(particion1, particion2, newC1, newC2, caso1, posicionB)
@@ -193,33 +193,27 @@ fun distanciaGanada(dOLD1: Int, dOLD2: Int, dNEW1: Int, dNEW2: Int): Int {
  * 
 */
 fun remover(A: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>>, x: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>): Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> {
-    println("elemento en el arreglo ${A.size}")
-    println(A.contentToString())
-    println(x) 
-    if (x == Pair(Triple(0.0,0.0,0),Triple(0.0,0.0,0))) {
+    if (x == Pair(Triple(-2.0,-2.0,0),Triple(-2.0,-2.0,0))) {
         return A
     }else if (A.size == 1) {
         var B = Array(0){Pair(Triple(0.0,0.0, 0), Triple(0.0,0.0, 0))}
         return B
     } else if (A.size == 2) {
-        var B = Array(1){Pair(Triple(0.0,0.0, 0), Triple(0.0,0.0, 0))}
+        var B = Array(1){Pair(Triple(-3.0,-3.0, 0), Triple(-3.0,-3.0, 0))}
         B[0] = A[1]
         return B
     } else {
-        var B = Array((A.size-1)){Pair(Triple(0.0,0.0, 0), Triple(0.0,0.0, 0))}
+        var B = Array((A.size-1)){Pair(Triple(-3.0,-3.0, 0), Triple(-3.0,-3.0, 0))}
         var j =0
-        println(B.size)
         for(i in 0 until A.size) {
             var lado = A[i]
             var ciudad1 = lado.first
             var ciudad2 = lado.second
             if ((ciudad1 == x.first || ciudad1 == x.second) && (ciudad2 == x.first || ciudad2 == x.second)) {
-                println("aparece ${j}")
                 continue
             } else {
                 B[j] = lado
                 j++ 
-                println(j)
             }
         }
 
@@ -239,10 +233,9 @@ fun remover(A: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, In
 */
 fun tour(A: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>>, B: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>>, 
 x: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>, y: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>, caso1: Boolean, posicionB: Int): Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> {
-    var Ciclo3 = Array(A.size+B.size+2){Pair(Triple(0.0,0.0, 0), Triple(0.0,0.0, 0))}
+    var Ciclo3 = Array(A.size+B.size+2){Pair(Triple(-4.0,-4.0, 0), Triple(-4.0,-4.0, 0))}
     var contador = 0
     var corte = 0
-    println("posicion B= ${posicionB}")
     if (A.size != 0) {
         for (i in 0 until A.size) {
             if (A[i].second == x.first) {
@@ -551,6 +544,8 @@ fun quicksortTSP(P: Array<Triple<Double,Double,Int>>, p: Int, r: Int, coordenada
  * Postondición: p <= q <= r && (\forall int i; p <= i && i < q; P[i].first <= P[q].first) && (\forall int i; q+1 <= i && i <= r; P[i].first => P[q].first)
  */  
 fun particionCoordenadaX(P: Array<Triple<Double,Double,Int>>, p: Int, r: Int): Int {
+    var k = (p..r).random()
+    swap(P,k,r)
 	var x = P[r].first
 	var i = p - 1
 	for (j in p until r) {
@@ -572,7 +567,9 @@ fun particionCoordenadaX(P: Array<Triple<Double,Double,Int>>, p: Int, r: Int): I
  * Postondición: p <= q <= r && (\forall int i; p <= i && i < q; P[i].second <= P[q].second) && (\forall int i; q+1 <= i && i <= r; P[i].second => P[q].second)
  */  
 fun particionCoordenadaY(P: Array<Triple<Double,Double,Int>>, p: Int, r: Int): Int {
-	var x = P[r].second
+	var k = (p..r).random()
+    swap(P,k,r)
+    var x = P[r].second
 	var i = p - 1
 	for (j in p until r) {
 		if (P[j].second <= x) {
@@ -663,7 +660,9 @@ fun obtenerPuntoDeCorte(P: Array<Triple<Double,Double,Int>>, ejeDeCorte: String)
  * La función retorna un Pair<Array<Pair<Double,Double>>, Array<Pair<Double,Double>>> que contiene las coordenadas de dos rectángulos,
  * los cuales se obtienen a partir del rectángulo original y trazando una recta
  * perpendicular al eje de corte por el punto de corte. Dichas coordenadas se encuentran en el siguiente orden:
- * esquina inferior izquierda, esquina inferior derecha, esquina superior derecha, esquina superior izquierda
+ * esquina inferior izquierda, esquina inferior derecha, esquina superior derecha, esquina superior izquierda, datos del retángulo.
+ * Los datos del rectángulo vienen dados en un Pair(a,b), donde a == 1.0 si es el rectángulo izquierdo (o inferior) y 0.0 en caso 
+ * contrario, y b = 2.0 si el eje de corte es X y 3.0 en caso contrario. 
  * Precondición: rectangulo.size >= 1
  * Precondición: rectangulo[0].first <= puntoDeCorte.first <= rectangulo[2].first && rectangulo[0].second <= puntoDeCorte.second <= rectangulo[2].second)
  * Postondición: (\result.first).size == 4 && (\result.second).size == 4
@@ -678,8 +677,10 @@ fun aplicarCorte(ejeDeCorte: String, puntoDeCorte: Pair<Double,Double>, rectangu
 		var coordenadasDer10 = rectangulo[1]
 		var coordenadasDer11 = rectangulo[2]
 		var coordenadasDer01 = Pair(puntoDeCorte.first, rectangulo[2].second)
-		var rectanguloIzq = arrayOf(coordenadasIzq00, coordenadasIzq10, coordenadasIzq11, coordenadasIzq01)
-		var rectanguloDer = arrayOf(coordenadasDer00, coordenadasDer10, coordenadasDer11, coordenadasDer01)
+        var indicadorIzqX = Pair(1.0,2.0)
+        var indicadorDerX = Pair(0.0,2.0)
+		var rectanguloIzq = arrayOf(coordenadasIzq00, coordenadasIzq10, coordenadasIzq11, coordenadasIzq01, indicadorIzqX)
+		var rectanguloDer = arrayOf(coordenadasDer00, coordenadasDer10, coordenadasDer11, coordenadasDer01, indicadorDerX)
 		return Pair(rectanguloIzq, rectanguloDer)
 	} else {
 		var coordenadasIzq00 = rectangulo[0]
@@ -690,29 +691,11 @@ fun aplicarCorte(ejeDeCorte: String, puntoDeCorte: Pair<Double,Double>, rectangu
 		var coordenadasDer10 = Pair(rectangulo[1].first, puntoDeCorte.second)
 		var coordenadasDer11 = rectangulo[2]
 		var coordenadasDer01 = rectangulo[3]
-		var rectanguloIzq = arrayOf(coordenadasIzq00, coordenadasIzq10, coordenadasIzq11, coordenadasIzq01)
-		var rectanguloDer = arrayOf(coordenadasDer00, coordenadasDer10, coordenadasDer11, coordenadasDer01)
+        var indicadorIzqY = Pair(1.0,3.0)
+        var indicadorDerY = Pair(0.0,3.0)
+		var rectanguloIzq = arrayOf(coordenadasIzq00, coordenadasIzq10, coordenadasIzq11, coordenadasIzq01, indicadorIzqY)
+		var rectanguloDer = arrayOf(coordenadasDer00, coordenadasDer10, coordenadasDer11, coordenadasDer01, indicadorDerY)
 		return Pair(rectanguloIzq, rectanguloDer)	
-	}
-}
-
-/* Función: esElPrimerRectangulo
- * Descripción: Recibe un P: Array<Triple<Double,Double,Int>> de coordenadas y un rectangulo: Array<Pair<Double,Double>> 
- * con las coordenadas de un rectángulo, las cuales deben estar en el siguiente orden:
- * esquina inferior izquierda, esquina inferior derecha, esquina superior derecha, esquina superior izquierda.
- * Esta función verifica si el rectángulo dado es el primer rectángulo que se obtiene luego de aplicar el corte al rectángulo
- * que contiene a P (el primer rectángulo corresponde al izquierdo si el corte es vertical y al inferior si es horizontal)
- * Precondición: P.size >= 1
- * Postondición: true || false
- */ 
-fun esElPrimerRectangulo(P: Array<Triple<Double,Double,Int>>, rectangulo: Array<Pair<Double,Double>>): Boolean {
-	var minimoX = obtenerMinimoCoordenadasX(P)
-	var minimoY = obtenerMinimoCoordenadasY(P)
-	var rec00 = Pair(minimoX, minimoY)
-	if (rec00 == rectangulo[0]) {
-		return true
-	} else {
-		return false
 	}
 }
 
@@ -738,7 +721,7 @@ fun obtenerPuntosPrimerRectangulo(P: Array<Triple<Double,Double,Int>>, rectangul
 			}	
 		}
 	}
-	var particion = Array(k, {Triple(0.0, 0.0, 0)})
+	var particion = Array(k, {Triple(-5.0, -5.0, 0)})
 	var j = 0
 	for (i in 0 until n) {
 		if (tmp[i] == 1) {
@@ -748,31 +731,6 @@ fun obtenerPuntosPrimerRectangulo(P: Array<Triple<Double,Double,Int>>, rectangul
 	}
 	return particion
 }
-
-/* Función: casoExtremo
- * Descripción: Recibe un P: Array<Triple<Double,Double,Int>> con coordenadas de ciudades y un rectángulo: Array<Pair<Double,Double>> 
- * con las coordenadas de un rectángulo, las cuales deben estar en el siguiente orden:
- * esquina inferior izquierda, esquina inferior derecha, esquina superior derecha, esquina superior izquierda.
- * Esta función verifica si se cumple el caso extremo en el cual el eje de corte para las particiones del algoritmo 2 corresponde
- * a uno de los lados del rectángulo que contiene a P. En ese caso el rectángulo izquierdo (o inferior) se reduce a una
- * línea y el rectángulo derecho (o superior) corresponde al rectángulo completo.
- * Precondición: P.size >= 1 && rectangulo.size == 4
- * Postondición: true || false
- */ 
-fun casoExtremo(P: Array<Triple<Double,Double,Int>>, rectangulo: Array<Pair<Double,Double>>): Boolean {
-    var esElPrimero = esElPrimerRectangulo(P,rectangulo)
-    if (esElPrimero == true) {
-        if ((rectangulo[0] == rectangulo[1]) || (rectangulo[0] == rectangulo[3])) {
-            return true
-        }
-    } else {
-        var rectanguloCompleto = obtenerRectangulo(P)
-        if (rectangulo.contentEquals(rectanguloCompleto)) {
-            return true
-        }
-    }
-    return false
-} 
 
 /* Función: obtenerPuntosSegundoRectangulo
  * Descripción: Recibe un P: Array<Triple<Double,Double,Int>> de coordenadas y un rectangulo: Array<Pair<Double,Double>> 
@@ -786,12 +744,9 @@ fun casoExtremo(P: Array<Triple<Double,Double,Int>>, rectangulo: Array<Pair<Doub
  */ 
 fun obtenerPuntosSegundoRectangulo(P: Array<Triple<Double,Double,Int>>, rectangulo: Array<Pair<Double,Double>>) : Array<Triple<Double,Double,Int>> {
 	var n = P.size
-	var k = 0
-	var tmp = Array(n, {0})
-	var minimoX = obtenerMinimoCoordenadasX(P)
-	var maximoY = obtenerMaximoCoordenadasY(P)
-    var minimoY = obtenerMinimoCoordenadasY(P)
-	if (rectangulo[3] == Pair(minimoX, maximoY) && rectangulo[0] != Pair(minimoX, minimoY)) {
+    var k = 0
+    var tmp = Array(n, {0})
+    if (rectangulo[4].second.compareTo(3.0) == 0) {
 		for (i in 0 until n) {
 			if (rectangulo[0].first <= P[i].first && P[i].first <= rectangulo[2].first) {
 				if (rectangulo[0].second < P[i].second && P[i].second <= rectangulo[2].second){
@@ -810,7 +765,7 @@ fun obtenerPuntosSegundoRectangulo(P: Array<Triple<Double,Double,Int>>, rectangu
 			}
 		}
 	}
-	var particion = Array(k, {Triple(0.0, 0.0, 0)})
+	var particion = Array(k, {Triple(-5.0, -5.0, 0)})
 	var j = 0
 	for (i in 0 until n) {
 		if (tmp[i] == 1) {
@@ -824,7 +779,9 @@ fun obtenerPuntosSegundoRectangulo(P: Array<Triple<Double,Double,Int>>, rectangu
 /* Función: obtenerPuntosRectangulo
  * Descripción: Recibe un P: Array<Triple<Double,Double,Int>> de coordenadas y un rectangulo: Array<Pair<Double,Double>> 
  * con las coordenadas de un rectángulo, las cuales deben estar en el siguiente orden:
- * esquina inferior izquierda, esquina inferior derecha, esquina superior derecha, esquina superior izquierda.
+ * esquina inferior izquierda, esquina inferior derecha, esquina superior derecha, esquina superior izquierda, datos del retángulo.
+ * Los datos del rectángulo vienen dados en un Pair(a,b), donde a == 1.0 si es el rectángulo izquierdo (o inferior) y 0.0 en caso 
+ * contrario, y b = 2.0 si el eje de corte es X y 3.0 en caso contrario. 
  * La función retorna un arreglo Array<Triple<Double,Double,Int>> que contiene aquellos puntos de P que están contenidos en el 
  * rectángulo dado. Se incluyen los lados del corte en caso de que el rectángulo dado sea el primero y no se incluye en caso
  * contrario (por diseño)
@@ -832,19 +789,10 @@ fun obtenerPuntosSegundoRectangulo(P: Array<Triple<Double,Double,Int>>, rectangu
  * Postondición: 0 <= \result.size <= P.size
  */ 
 fun obtenerPuntosRectangulo(P: Array<Triple<Double,Double,Int>>, rectangulo: Array<Pair<Double,Double>>): Array<Triple<Double,Double,Int>>{
-	if (casoExtremo(P,rectangulo) == true) {
-        if (esElPrimerRectangulo(P,rectangulo) == true) {
-            var B = Array(0, {Triple(0.0, 0.0, 0)})
-            return B
-        } else {
-            return P
-        }
+	if (rectangulo[4].first.compareTo(1.0) == 0) {
+        return obtenerPuntosPrimerRectangulo(P,rectangulo)
     } else {
-        if (esElPrimerRectangulo(P, rectangulo) == true) {
-            return obtenerPuntosPrimerRectangulo(P,rectangulo)
-        } else {
-            return obtenerPuntosSegundoRectangulo(P,rectangulo)
-        }
+        return obtenerPuntosSegundoRectangulo(P,rectangulo)
     }
 }
 
@@ -954,7 +902,7 @@ fun obtenerDistanciaTour(tour: Array<Pair<Triple<Double,Double,Int>, Triple<Doub
  */ 
 fun invertirTour(tour: Array<Pair<Triple<Double,Double,Int>, Triple<Double,Double,Int>>>, p: Int, q: Int) {
 	var n = q-p+1
-	var tmp = Array(n, {Pair(Triple(0.0, 0.0, 0), Triple(0.0, 0.0, 0))})
+	var tmp = Array(n, {Pair(Triple(-6.0, -6.0, 0), Triple(-6.0, -6.0, 0))})
 	var k = q
 	for (i in 0 until n) {
 		tmp[i] = Pair(tour[k].second, tour[k].first)
@@ -1037,28 +985,6 @@ fun divideAndConquerAndLocalSearchTSP(P: Array<Triple<Double,Double,Int>>) : Arr
 	var c2 = busquedaLocalCon2OPT(c1)
 	var distancia2OPT = obtenerDistanciaTour(c2)
 	println("La distancia del tour obtenido como solución final es ${distancia2OPT}")
-   
     println(" ")
 	return c2
 }
-
-
-// PARA PROBAR LOS ALGORITMOS
-
-/* Función:
- * Descripción: 
- * Precondición:
- * Postondición:
- */ 
-
-// Para generar un tour ordenado
-fun obtenerTourOrdenado(A: Array<Triple<Double, Double,Int>>): Array<Pair<Triple<Double,Double,Int>, Triple<Double,Double,Int>>> {
-	var C = Array(A.size, {Pair(Triple(0.0, 0.0, 0), Triple(0.0, 0.0, 0))})
-	for (i in 0 until A.size-1) {
-		C[i] = Pair(A[i], A[i+1])
-	}
-	C[A.size-1] = Pair(A[A.size-1], A[0])
-	return C
-}
-
-
