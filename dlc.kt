@@ -13,7 +13,6 @@ fun main(args: Array<String>) {
     println("")
     var tourSolucion = divideAndConquerAndLocalSearchTSP(P)
     println("El tour solución es:")
-    println(tourSolucion.contentToString())
     println("")
     /*generarArchivoSolucionTSPLIB(args[1], tourSolucion)*/
 }
@@ -168,7 +167,6 @@ fun combinarCiclos(A: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Dou
 	println("${caso1}")
     var Ciclo3 = tour(particion1, particion2, newC1, newC2, caso1, posicionB)
 	println("Tour en el arreglo")
-	println(Ciclo3.contentToString())
     return Ciclo3
 }
 
