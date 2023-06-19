@@ -118,19 +118,6 @@ fun divideAndConquerTSP(
         return cicloTresCiudades(P)
     } else {
         var (pIzquierda,pDerecha) = obtenerParticiones(P)
-        if (pIzquierda.size == 0 && pDerecha.size == 0) {
-            var C1: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> = emptyArray()
-            var C2: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> = emptyArray()
-            return combinarCiclos(C1, C2)
-        } else if (pIzquierda.size != 0 && pDerecha.size == 0) {
-            var C1 = divideAndConquerTSP(pIzquierda)
-            var C2: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> = emptyArray()
-            return combinarCiclos(C1, C2)
-        } else if (pIzquierda.size == 0 && pDerecha.size != 0) {
-            var C1: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> = emptyArray()
-            var C2 = divideAndConquerTSP(pDerecha)
-            return combinarCiclos(C1, C2)
-        }
         var C1 = divideAndConquerTSP(pIzquierda)
         var C2 = divideAndConquerTSP(pDerecha)
         return combinarCiclos(C1, C2)
