@@ -12,10 +12,10 @@ fun main(args: Array<String>) {
     var P = obtenerDatosTSP(args[0])
     println("")
     var tourSolucion = divideAndConquerAndLocalSearchTSP(P)
-    /*println("El tour solución es:")
+    println("El tour solución es:")
     println(tourSolucion.contentToString())
     println("")
-    generarArchivoSolucionTSPLIB(args[1], tourSolucion)*/
+    /*generarArchivoSolucionTSPLIB(args[1], tourSolucion)*/
 }
 
 /* ALGORITMOS 1 y 3 DEL PROBLEMA DEL TSP
@@ -29,10 +29,7 @@ fun main(args: Array<String>) {
 */
 fun divideAndConquerTSP(P: Array<Triple<Double, Double, Int>>):  Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> {
     var n = P.size
-    if (n == 0) {
-        var C = Array(0){Pair(Triple(0.0,0.0,0), Triple(0.0,0.0,0))}
-        return C
-    } else if (n == 1) {
+    if (n == 1) {
         return cicloUnaCiudad(P)
     } else if (n ==2) {
         return cicloDosCiudades(P)
@@ -40,9 +37,22 @@ fun divideAndConquerTSP(P: Array<Triple<Double, Double, Int>>):  Array<Pair<Trip
         return cicloTresCiudades(P)
     } else {
         var (pIzquierda,pDerecha) = obtenerParticiones(P)
-        var C1 = divideAndConquerTSP(pIzquierda)
-        var C2 = divideAndConquerTSP(pDerecha)
-        return combinarCiclos(C1, C2)
+		if (pIzquierda.size == 0 && pDerecha.size == 0) {
+			var C1: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> = emptyArray()
+			var C2: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> = emptyArray()
+			return combinarCiclos(C1, C2)
+		} else if (pIzquierda.size != 0 && pDerecha.size == 0) {
+			var C1 = divideAndConquerTSP(pIzquierda)
+			var C2: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> = emptyArray()
+			return combinarCiclos(C1, C2)
+		} else if (pIzquierda.size == 0 && pDerecha.size != 0) {
+			var C1: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> = emptyArray()
+			var C2 = divideAndConquerTSP(pDerecha)
+			return combinarCiclos(C1, C2)
+		}
+		var C1 = divideAndConquerTSP(pIzquierda)
+		var C2 = divideAndConquerTSP(pDerecha)
+		return combinarCiclos(C1, C2)
     }   
 }
 
@@ -143,12 +153,22 @@ fun combinarCiclos(A: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Dou
         }
     }
     // Eliminar lados
-    println("particion 1 en el arreglo ${A.size}")
+    
     var particion1 = remover(A, dC1)
-    println("particion 2 en el arreglo ${B.size}")
     var particion2 = remover(B, dC2)
     // Agregar lados y unir
+	println("particion 1 en el arreglo ${A.size}")
+	println(particion1.contentToString())
+	println("particion 2 en el arreglo ${B.size}")
+	println(particion2.contentToString())
+	println("agregar")
+	println(newC1)
+	println(newC2)
+	println("Tour")
+	println("${caso1}")
     var Ciclo3 = tour(particion1, particion2, newC1, newC2, caso1, posicionB)
+	println("Tour en el arreglo")
+	println(Ciclo3.contentToString())
     return Ciclo3
 }
 
@@ -199,7 +219,7 @@ fun remover(A: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, In
     if (x == Pair(Triple(0.0,0.0,0),Triple(0.0,0.0,0))) {
         return A
     }else if (A.size == 1) {
-        var B = Array(0){Pair(Triple(0.0,0.0, 0), Triple(0.0,0.0, 0))}
+        var B: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> = emptyArray()
         return B
     } else if (A.size == 2) {
         var B = Array(1){Pair(Triple(0.0,0.0, 0), Triple(0.0,0.0, 0))}
@@ -239,9 +259,30 @@ fun remover(A: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, In
 */
 fun tour(A: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>>, B: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>>, 
 x: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>, y: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>, caso1: Boolean, posicionB: Int): Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> {
-    var Ciclo3 = Array(A.size+B.size+2){Pair(Triple(0.0,0.0, 0), Triple(0.0,0.0, 0))}
+    var cantidad = 0
+	var xCheck: Boolean
+	var yCheck: Boolean
+	if (x == Pair(Triple(0.0,0.0,0),Triple(0.0,0.0,0)) && y == Pair(Triple(0.0,0.0,0),Triple(0.0,0.0,0)) ) {
+		xCheck = true
+		yCheck = true	
+	} else if (x != Pair(Triple(0.0,0.0,0),Triple(0.0,0.0,0)) && y == Pair(Triple(0.0,0.0,0),Triple(0.0,0.0,0)) ) {
+		cantidad = 1
+		xCheck = false
+		yCheck = true
+	} else if (x == Pair(Triple(0.0,0.0,0),Triple(0.0,0.0,0)) && y != Pair(Triple(0.0,0.0,0),Triple(0.0,0.0,0))) {
+		cantidad = 1
+		xCheck = true
+		yCheck = false
+	} else {
+		cantidad = 2
+		xCheck = false
+		yCheck = false
+	}
+	var Ciclo3 = Array(A.size+B.size+cantidad){Pair(Triple(0.0,0.0, 0), Triple(0.0,0.0, 0))}
     var contador = 0
     var corte = 0
+	println("tamaño A= ${A.size}")
+	println("tamaño B= ${B.size}")
     println("posicion B= ${posicionB}")
     if (A.size != 0) {
         for (i in 0 until A.size) {
@@ -255,9 +296,11 @@ x: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>, y: Pair<Tripl
                 corte++
             }
         }
-    } 
-    Ciclo3[contador] = x
-    contador ++
+    }
+	if (xCheck == false) {
+		Ciclo3[contador] = x
+    	contador ++
+	}
     if (B.size != 0 && posicionB != -1) {
         if (caso1 == true) {
             for (i in posicionB-1 downTo 0) {
@@ -280,10 +323,19 @@ x: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>, y: Pair<Tripl
                 contador++
             }
         }
-    }
-    var tmp3 = Pair(y.second, y.first)
-    Ciclo3[contador] = tmp3
-    contador++
+    } 
+	if (posicionB == -1) {
+		for (i in 0 until B.size){
+			Ciclo3[contador] = B[i]
+			contador++
+		}
+	}
+	if (yCheck == false) {
+		var tmp3 = Pair(y.second, y.first)
+    	Ciclo3[contador] = tmp3
+    	contador++
+	}
+    
     if (A.size != 0){
         for (i  in (corte+1) until A.size) {
             Ciclo3[contador] = A[i]
@@ -1060,3 +1112,5 @@ fun obtenerTourOrdenado(A: Array<Triple<Double, Double,Int>>): Array<Pair<Triple
 	C[A.size-1] = Pair(A[A.size-1], A[0])
 	return C
 }
+
+
