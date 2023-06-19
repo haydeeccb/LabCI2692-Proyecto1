@@ -1,0 +1,121 @@
+%Plantilla HCCB para Ubuntu
+
+\documentclass[titlepage]{article}
+
+%Los paquetes
+
+\usepackage{amsmath, amsfonts} %Paquetes para manejar cosas de matemática
+\usepackage[spanish, es-tabla]{babel} %Paquete para utilizar LaTeX en español. La parte "es-tabla" es para que salga "TABLA 1" (en lugar de "CUADRO 1" que es el defecto)
+\usepackage{graphicx} %Paquete para insertar imágenes
+\usepackage{setspace} %Paquete para trabajar con las medidas en el documento
+\usepackage[a4paper]{geometry} %Paquete para trabajar con el tamaño del papel y los márgenes
+%\usepackage{tikz,xcolor,pgfplots,}%Paquete para hacer el gráfico
+%\usepackage[dvipsnames]{xcolor}%paquete de colores
+%Papel y márgenes
+
+\geometry{top=2cm, bottom=2cm, left=2cm, right=2cm} %Márgenes
+\setstretch{1} %Interlineado
+\begin{document}
+	\begin{titlepage}
+		\centering
+		\includegraphics*[scale=0.2]{logo usb.jpg}
+		
+		\vspace{0.5cm}		
+		
+		\large 
+		Universidad Sim\'on Bol\'ivar\\
+		Departamento de Computaci\'on y Tecnolog\'ia de la Informaci\'on\\
+		Laboratorio de Algoritmos y Estructuras II - CI2692
+		
+		\vspace{7cm}
+		
+		\LARGE
+		\textbf{Un algoritmo divide-and-conquer para
+		el problema del agente viajero}
+		
+		\vspace{0.5cm}
+		
+		\textbf{Proyecto 1}
+		
+		\vspace{5cm}
+		
+		\large
+		
+		Profesor: Guillermo Palma\\
+		Estudiantes:\\
+		Hayde\'e Castillo Borgo. Carnet: 16-10209\\
+		Jes\'us Prieto. Carnet: 19-10211
+		
+		\vspace{5cm}
+		
+		Trimestre Abril-Julio 2023
+	\end{titlepage}
+	
+	\section{Introducci\'on}
+	
+	El problema del agente viajero, TSP por sus siglas en ingl\'es, es un problema de optimizaci\'on ampliamente estudiado en matem\'aticas y en computaci\'on. En este problema se tiene un conjunto de ciudades y se busca diseñar un tour que permita recorrer todas las ciudades sin repetici\'on y en la menor distancia posible.\\
+	
+	En el presente proyecto se considera el problema del TSP Euleriano, que es aquel en el cual las ciudades vienen dadas como puntos del plano cartesiano; y se implementa un algoritmo divide-and-conquer en conjunto con un algoritmo de optimizaci\'on 2-opt, para resolver dicho problema y presentar su soluci\'on de acuerdo al esquema de TSPLIB.\\
+	
+	A continuaci\'on se describen los algoritmos implementados, los resultados obtenidos y se presentan las conclusiones alcanzadas en la realizaci\'on del proyecto.
+	
+	\section{Diseño de la soluci\'on}
+	
+	Para implementar el algoritmo de divide-and-conquer se emplea el lenguaje de programaci\'on Kotlin y se organiza el c\'odigo de acuerdo a 4 algoritmos principales:
+	\begin{itemize}
+		\item Algoritmo 1:  divideAndConquerTSP, el cual representa el centro del esquema divide-and-conquer empleado para resolver el problema TSP
+		\item Algoritmo 2:  obtenerParticiones, el cual se encarga de dividir el problema en instancias m\'as pequeñas para poder resolverlo
+		\item Algoritmo 3: combinarCiclos, el cual se encarga de unir las soluciones dadas para las instancias pequeñas en una solución completa para una instancia más grande
+		\item Algoritmo 4:  divideAndConquerAndLocalSearchTSP, el cual se encarga de modificar la soluci\'on proporcionada por el algoritmo divideAndConquerTSP a trav\'es del algoritmo de optimizaci\'on 2-opt y propocionar una soluci\'on m\'as eficiente al problema del TSP.
+	\end{itemize}
+	
+	Adem\'as se tienen el Algoritmo 0, denominado obtenerDatosTSP, el cual se encarga de registrar y extraer los datos del problema TSP proporcionados a trav\'es de un archivo con formato TSPLIB; y el Algoritmo 5, denominado generarArchivoSolucionTSPLIB, el cual se encarga de procesar la soluci\'on proporcionada por los algoritmos 1-4 y generar un archivo en formato TSPLIB.\\  
+	
+	En esta implementaci\'on, el conjunto de ciudades se denota $P$ y viene dado por un arreglo de tripletas que contienen la coordenada $x$ (como un Double), la coordenada $y$ (como un Double) y el n\'umero respectivo de la ciudad (como un Int). Por otro lado, los tours vienen representados como ciclos que contienen los lados de las ciudades y se organizan en arreglos de pares de dichas tripletas, pues cada lado se representa como un par $(a,b)$ donde $a$ es la tripleta que representa a una ciudad y $b$ es la tripleta que representa a otra.\\
+	
+	En el algoritmo divideAndConquerTSP se consideran cuatro casos de acuerdo a la cantidad $n$ de ciudades en el arreglo $P$. Si $n = 1$, $n = 2$ o $n = 3$, se emplean las funciones cicloUnaCiudad, cicloDosCiudades o cicloTresCiudaes, respectivamente, para obtener un tour que recorra las $n$ ciudades en orden. Por otro lado, si $n > 4$ se procede a emplear los algoritmos obtenerParticiones y combinarCiclos para dividir y conquistar el problema.\\
+	
+	En el algoritmo obtenerParticiones se emplean rect\'angulos, dados por arreglos de pares de coordenadas (pares de Doubles), para poder separar el conjunto $P$ de ciudades en dos particiones m\'as pequeñas que permitan resolver el problema.
+	\begin{enumerate}
+		\item Primero se emplea la funci\'on obtenerRect\'angulo para obtener 4 coordenadas (pares de doubles) que delimitan un rect\'angulo que contiene a todas las ciudades de $P$. Dichas coordenadas se encuentran en el siguiente orden: esquina inferior izquierda, esquina inferior derecha, esquina superior derecha, esquina superior izquierda.
+		\item  Posteriormente se determina un eje de corte de acuerdo a las dimensiones del primer rect\'angulo y este se emplea para dividir dicho rect\'angulo en dos partes, trazando una recta perpendicular a su lado m\'as largo. Dicha recta se traza en un punto determinado por la funci\'on obtenerPuntoDeCorte, la cual ordena $P$ de acuerdo a las coordenadas del eje de corte y empleando una modificaci\'on del algoritmo randomized quicksort, para luego seleccionar su punto medio como punto de corte.
+		\item Luego de trazar dicha recta por medio de la funci\'on aplicarCorte, se obtienen dos rect\'angulos (izquierdo y derecho o inferior y superior) los cuales vienen dados por arreglos de pares con sus 4 coordenadas (en el mismo orden que el primer rect\'angulo) y una coordenada adicional que indica cu\'al rect\'angulo es (el izquierdo o el derecho) y respecto a cu\'al eje de corte fue obtenido. En esta \'ultima coordenada se emplea 1.0 y 0.0 para referirse al primer y al segundo rect\'angulo, respectivamente; y 2.0 y 3.0 para referirse a los ejes $X$ y $Y$, respectivamente. 
+		\item Posteriormente se emplea la funci\'on obtenerPuntosRectangulo para separar $P$ en dos particiones (arreglos de tripletas) dadas por los rect\'angulo obtenidos. En este caso los puntos del lado com\'un a ambos rect\'angulos (lado de corte) se almacenan en el primero (izquierdo o inferior, seg\'un corresponda).
+		\item En caso de que alguna de las particiones quedara vac\'ia, se repite el proceso anterior tomando como eje de corte el opuesto al primero. Y si, por segunda vez, alguna partici\'on queda vac\'ia, se realiza el corte por el punto medio de uno de los ejes del rect\'angulo original y se repite lo anterior. 
+	\end{enumerate}
+	
+	En el algoritmo combinarCiclos se reciben dos ciclos obtenidos del divideAndConquerTSP y se mezclan en un s\'olo ciclo considerando la forma m\'as \'optima de unir los lados para tener la menor distancia posible. 
+	
+	\begin{enumerate}
+		\item Primero se verifica si alguno de los ciclos recibidos es vac\'io, en cuyo caso retorna el otro ciclo.
+		\item Posteriormente se verifica lado por lado en ambos ciclos para determinar cu\'al es la combinaci\'on \'optima para unirlos. Con esto se señala qu\'e lados deben removerse y qu\'e lados agregarse al momento de la uni\'on. 
+		\item Una vez determinado cuales lados deben retirarse y cuales añadirse, se procede a remover los lados de los dos ciclos a trav\'es de la funci\'on \textit{remover}, y posteriormente se combinan ambos ciclos con la funci\'on \textit{tour}, ordenando los lados a agregar de tal manera que se siga la secuencia de un ciclo.
+	\end{enumerate}
+	
+	Finalmente, en el algoritmo divideAndConquerAndLocalSearchTSP se emplea el procedimiento de optimizaci\'on 2-opt para mejorar el resultado proporcionado por divideAndConquerTSP. Dicha optimizaci\'on consiste en intercambiar los lados de un tour hasta obtener una distancia m\'as \'optima y para implementarla se emplea la funci\'on swap2OPT, la cual lleva a cabo el cambio e invierte la secci\'on correspondiente en el tour para mantener el recorrido ordenado. 
+	
+	\section{Resultados experimentales}
+	
+	A continuaci\'on se presentan los resultados de las comparaciones entre el algoritmo implementado y los resultados presentados en TSPLIB.\\
+	
+	El estudio experimental se llev\'o a cabo en un computador Intel® Core™ i5-2450M CPU @ 2.50GHz × 4, con 8Gb de RAM y sistema operativo Ubuntu 20.04.6 LTS. Adem\'as, se emple\'o el lenguaje de programaci\'on Kotlin en su versi\'on 1.8.21 y Java Virtual Machine JVM, versi\'on 11.0.19.\\
+	
+	$$\begin{array}{|c|c|c|}
+		\hline
+		\textbf{Nombre de la instancia} & \textbf{Distancia obtenida} & \textbf{\% Desviaci\'on del valor \'optimo}\\
+		\hline
+	\end{array}$$\:
+	
+	$$\begin{array}{|c|c|c|}
+		\hline
+		\textbf{Nombre del resolvedor} & \textbf{Distancia total obtenida} & \textbf{\% Desviaci\'on del valor \'optimo total}\\
+		\hline
+		\text{Divide-and-conquer} & & \\
+		\hline
+		\text{Divide-and-conquer + 2opt} & & \\
+		\hline
+	\end{array}$$\:
+	\section{Conclusiones}
+	
+	Es importante destacar que la realizaci\'on del presente proyecto y el estudio del problema del viaje permitieron detallar y comprender la utilidad de los algoritmos de recursi\'on y divide-and-conquer al momento de trabajar con grandes cantidades de datos. Adem\'as, se apreci\'o como la t\'ecnica de subdividir una instancia en problemas m\'as pequeños proporciona un esquema m\'as c\'omodo y \'util para implementar algoritmos. 
+\end{document}
