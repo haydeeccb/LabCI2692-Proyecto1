@@ -1,3 +1,11 @@
+/**
+ * DCLSTSP corresponde a una programa que implementa una solución para el problema del viajero, TSP por 
+ * sus siglas en inglés, a través de un esquema de divide-and-conquer y empleando un algoritmo de 
+ * optimización 2-opt.
+ * 
+ * Desarrollado por: Castillo, Haydeé y Prieto, Jesús.
+ */ 
+
 // Librerías
 
 import kotlin.math.roundToInt
@@ -6,6 +14,8 @@ import java.io.File
 import java.io.Reader
 import java.io.InputStream
 import java.io.BufferedReader
+
+// Función Main
 
 fun main(args: Array<String>) {
     println("La instancia a resolver es: " +args[0])
@@ -20,273 +30,7 @@ fun main(args: Array<String>) {
     //generarArchivoSolucionTSPLIB(args[1], tourSolucion)
 }
 
-/* ALGORITMOS 1 y 3 DEL PROBLEMA DEL TSP
- * Con sus respectivas funciones auxiliares
-*/
-
-/* Función: divideAndConquerTSP
- * Descripción: Recibe de entrada un arreglo de pares(Array<Pair(Double, Double)>) y retorna un arreglo de pares con una solucion válida del TSP
- * Precondición: A.size > 0 && 
- * Postcondición: \result.size == A.size + 1 && (\forall int i; 0 <= i < \result.size; (\exists int j: 0 <= j < A.size; \result[i] == A[j] )) 
-*/
-fun divideAndConquerTSP(P: Array<Triple<Double, Double, Int>>):  Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> {
-    var n = P.size
-    if (n == 0) {
-        var C = Array(0){Pair(Triple(-1.0,-1.0,0), Triple(-1.0,-1.0,0))}
-        return C
-    } else if (n == 1) {
-        return cicloUnaCiudad(P)
-    } else if (n ==2) {
-        return cicloDosCiudades(P)
-    } else if (n == 3) {
-        return cicloTresCiudades(P)
-    } else {
-        var (pIzquierda,pDerecha) = obtenerParticiones(P)
-        var C1 = divideAndConquerTSP(pIzquierda)
-        var C2 = divideAndConquerTSP(pDerecha)
-        return combinarCiclos(C1, C2)
-    }   
-}
-
-/* Función: cicloUnaCiudad
- * Descripción: De entrada recibe un arreglo de coordenadas de tamaño uno y retorna un arreglo de coordenadas de tamaño dos.
- * Este arreglo representa un tour, una solución válida del TSP.
- * Precondición: A.size == 1  
- * Postcondición: (\result.size == 2) && (\forall int i; 0 <= i < \result.size; \result[i] == A[0]) 
-*/
-fun cicloUnaCiudad(A: Array<Triple<Double, Double, Int>>):  Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> {
-    var B = arrayOf(Pair(A[0], A[0]))
-    return B
-}
-
-/* Función: cicloDosCiudades
- * Descripción: De entrada recibe un arreglo de coordenadas de tamaño dos y retorna un arreglo de coordenadas de tamaño tres.
- * Arreglo que representa un tour, una solución válida del TSP.
- * Precondición: A.size == 2 
- * Postcondición: (\result.size == 3) && (\forall int i; 0 <= i < \result.size; (\exists int j: 0 <= j < A.size; \result[i] == A[j] )) 
-*/
-fun cicloDosCiudades(A: Array<Triple<Double, Double, Int>>):  Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> {
-    var B = arrayOf(Pair(A[0], A[1]), Pair(A[1], A[0]))
-    return B
-}
-
-/* Función: cicloTresCiudades
- * Descripción: De entrada recibe un arreglo de coordenadas de tamaño tres y retorna un arreglo de coordenadas de tamaño cuatro.
- * Arreglo que representa un tour, una solución válida del TSP.
- * Precondición: A.size == 3  
- * Postcondición: (\result.size == 4) && (\forall int i; 0 <= i < \result.size; (\exists int j: 0 <= j < A.size; \result[i] == A[j] )) 
-*/
-fun cicloTresCiudades(A:  Array<Triple<Double, Double, Int>>): Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> {
-    var B = arrayOf(Pair(A[0], A[1]), Pair(A[1], A[2]), Pair(A[2], A[0]))
-    return B
-}
-
-/* Función: combinarCiclos
- * Descripción: Recibe como entreda dos arreglos que contienen las coordenadas de las ciudades(Array<Pair<Double,Double>>). 
- * La funcion busca unir ambos arreglos(cada arreglo es una solucion, es decir, un tour) para contruir uno nuevo,
- * este elemento de salida debe cumple dos requisitos, tener la distancia mas corta a recorrer todas las ciudades y cumplir las especificaciones de un tour. 
- * Precondición: A.size >= 0  && B.size >= 0  
- * Postcondición: (\result.size == (A.size + B.size -1 )) && 
- * (\forall int i; 0 <= i < \result.size; (\exists int j: 0 <= j < A.size; \result[i] == A[j] ) || (\exists int j: 0 <= j < B.size; \result[i] == B[j] )) 
-*/
-fun combinarCiclos(A: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>>, B: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>>): 
-    Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> {
-    if (A.size == 0) {
-        return B
-    }
-    if (B.size == 0) {
-        return A
-    }
-    var minG = Int.MAX_VALUE;
-    var newC1: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>> = Pair(Triple(-2.0, -2.0, 0), Triple(-2.0, -2.0, 0))
-    var newC2: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>> = Pair(Triple(-2.0, -2.0, 0), Triple(-2.0, -2.0, 0))
-    var dC1: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>> = Pair(Triple(-2.0, -2.0, 0), Triple(-2.0, -2.0, 0))
-    var dC2: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>> = Pair(Triple(-2.0, -2.0, 0), Triple(-2.0, -2.0, 0))
-    var caso1 = true
-    var posicionB = -1 
-    for (i in 0 until A.size-1) {
-        var lado1 = A[i]
-        var a = lado1.first
-        var b = lado1.second
-        var dOLD1 = distancia(a,b)
-        for (j in 0 until B.size-1) {
-            var lado2 = B[j]
-            var c = lado2.first
-            var d = lado2.second
-            var dOLD2 = distancia(c,d)
-            var dNEW1 = distancia(a,c)
-            var dNEW2 = distancia(b,d)
-            var dNEW3 = distancia(a,d)
-            var dNEW4 = distancia(b,c)
-            var g1 = distanciaGanada(dOLD1, dOLD2, dNEW1, dNEW2)
-            var g2 = distanciaGanada(dOLD1, dOLD2, dNEW3, dNEW4)
-            var ganancia = min(g1, g2)
-            if (ganancia < minG) {
-                minG = ganancia
-                posicionB = j 
-                if (g1 < g2) {
-                    // Agregar lados
-                    newC1 = Pair(a, c)
-                    // agregar lados
-                    newC2 = Pair(b, d)
-                    caso1 = true
-                } else {
-                    // Agregar lados
-                    newC1 = Pair(a, d)
-                    // Agregar lados
-                    newC2 = Pair(b, c)
-                    caso1 = false
-                }
-                // Eliminar lados
-                dC1 = Pair (a, b)
-                // Eliminar lados
-                dC2 = Pair(c, d)
-            }
-        }
-    }
-    // Eliminar lados
-    var particion1 = remover(A, dC1)
-    var particion2 = remover(B, dC2)
-    // Agregar lados y unir
-    var Ciclo3 = tour(particion1, particion2, newC1, newC2, caso1, posicionB)
-    return Ciclo3
-}
-
-/* Función: distancia
- * Descripción: Recibe como entrada dos Pares que contienen las coordenadas de X y Y de las ciudades(Pair<Double, Double>).
- * La funcion se encarga de sacar las distancia que hay entre una ciudad y otra. Cada ciudad es un par, en donde el primer elemento del par 
- * represneta la coordenada X y el segundo elemento su coordenada en Y.
- * Precondición: true  
- * Postcondición: \result == Math.sqrt((b.first - a.first)*(b.first - a.first) + (b.second - a.second)*(b.second - a.second))
- * 
-*/
-fun distancia(a: Triple<Double, Double, Int> , b: Triple<Double, Double, Int>): Int {
-    var xd: Double = b.first - a.first
-    var yd: Double = b.second - a.second 
-    var dxy = Math.sqrt(xd*xd+yd*yd).roundToInt()
-    return dxy
-}
-
-/* Función: distanciaGanada
- * Descripción: Recibe como entreda 4 enteros(Int), cada uno de ellos es una distancia de entre dos ciudades.
- * El primer entero(dOLD1) es la distancia entre dos ciudades que se encuentran en la particion por la izquierda.
- * El segundo entero(dOLD2) es la distancia entre dos ciudades que se encuentran en la particion por la derecha.
- * El tercer y cuarto(dNEW1 y dNEW2) entero son las nuevas distancias entre una ciudad de la particion izquierda y una de la derecha.
- * La funcion devulve la distancia ganada entre (dOLD1, dOLD2) y (dNEW1, dNEW2).
- * La funcion busca unir ambos arreglos(cada arreglo es una solucion, es decir, un tour) para contruir uno nuevo,
- * este elemento de salida debe cumple dos requisitos, tener la distancia mas corta a recorrer todas las ciudades y cumplir las especificaciones de un tour. 
- * Precondición: dOLD1 > 0 && dOLD2 > 0  && dNEW1 > 0 && dNEW2 > 0
- * Postcondición: \result == (dNEW1 + dNEW2) - (dOLD1 + dOLD2)
-*/
-fun distanciaGanada(dOLD1: Int, dOLD2: Int, dNEW1: Int, dNEW2: Int): Int {
-    return (dNEW1 + dNEW2) - (dOLD1 + dOLD2)
-}
-
-/* Función: remover
- * Descripción: Recibe como entrada un arreglo de pares(Array<Pair<Double, Double>>) que es una de las particiones del algoritmo combinarCiclos,
- * tambien ingresa un par que contiene dos ciudades(Pair<Pair<Double, Double>, Pair<Double, Double>>).
- * La funcion revisara cada elemento del arreglo A, si algun elemento coincide con un alguna de las ciudades del par X
- * este procede a eliminar ese par y continua con la revision.
- * Al final nos retornara un arreglo que posee todos los elementos de A exceptuando las dos ciudades del par X.
- * Precondición: A.size >= 3 && (\exists int i: 0 <= i < A.size; x.first == A[i] ||  x.second == A[i]) 
- * Postcondición: (\forall int i: 0 <= i < \result.size; x.first != A[i] ||  x.second != A[i]) 
- * 
-*/
-fun remover(A: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>>, x: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>): Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> {
-    if (x == Pair(Triple(-2.0,-2.0,0),Triple(-2.0,-2.0,0))) {
-        return A
-    }else if (A.size == 1) {
-        var B = Array(0){Pair(Triple(0.0,0.0, 0), Triple(0.0,0.0, 0))}
-        return B
-    } else if (A.size == 2) {
-        var B = Array(1){Pair(Triple(-3.0,-3.0, 0), Triple(-3.0,-3.0, 0))}
-        B[0] = A[1]
-        return B
-    } else {
-        var B = Array((A.size-1)){Pair(Triple(-3.0,-3.0, 0), Triple(-3.0,-3.0, 0))}
-        var j =0
-        for(i in 0 until A.size) {
-            var lado = A[i]
-            var ciudad1 = lado.first
-            var ciudad2 = lado.second
-            if ((ciudad1 == x.first || ciudad1 == x.second) && (ciudad2 == x.first || ciudad2 == x.second)) {
-                continue
-            } else {
-                B[j] = lado
-                j++ 
-            }
-        }
-
-        return B
-    }  
-}
-
-/* Función: tour
- * Descripción: Recibe dos arreglos (Array<Pair<Double, Double>>) A y B que ya pasaron por la funcion remover.
- * Estos arreglos contienen todas las ciudades exceptuando las ciudades que se debian remover para colocar los nuevos pares o conexiones. 
- * Dos pares que se reciben como entrada y cada uno contine dos ciudades, que trazan el nuevo camino que debe tomar la persona para formar un tour con A y B.
- * La funcion busca crear un nuevo arreglo, que contiene los elementos de A y B, ademas que intregra en ese arreglo las ciudades que estan dentro de los pares. 
- * Precondición: A.size > 0 && B.size > 0 && \result.size == (A.size + B.size + 5)
- * && (\forall int i: 0 <= i < A.size; x.first != A[i] &&  x.second != A[i]) && (\forall int j: 0 <= j < B.size; y.first != A[i] &&  y.second != A[i]) 
- * Postcondición: (\forall int i: 0 <= i < \result.size; x.first != A[i] ||  x.second != A[i]) 
- * 
-*/
-fun tour(A: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>>, B: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>>, 
-x: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>, y: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>, caso1: Boolean, posicionB: Int): Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> {
-    var Ciclo3 = Array(A.size+B.size+2){Pair(Triple(-4.0,-4.0, 0), Triple(-4.0,-4.0, 0))}
-    var contador = 0
-    var corte = 0
-    if (A.size != 0) {
-        for (i in 0 until A.size) {
-            if (A[i].second == x.first) {
-                Ciclo3[contador] = A[i]
-                contador++
-                break
-            } else {
-                Ciclo3[contador] = A[i]
-                contador++
-                corte++
-            }
-        }
-    } 
-    Ciclo3[contador] = x
-    contador ++
-    if (B.size != 0 && posicionB != -1) {
-        if (caso1 == true) {
-            for (i in posicionB-1 downTo 0) {
-                var tmp1 = Pair(B[i].second, B[i].first)
-                Ciclo3[contador] = tmp1
-                contador++
-            }
-            for (i in B.size-1 downTo posicionB) {
-                var tmp2 = Pair(B[i].second, B[i].first)
-                Ciclo3[contador] = tmp2
-                contador++
-            }
-        } else {
-            for (i in posicionB until B.size) {
-                Ciclo3[contador] = B[i]
-                contador++
-            }
-            for (i in 0 until posicionB){
-                Ciclo3[contador] = B[i]
-                contador++
-            }
-        }
-    }
-    var tmp3 = Pair(y.second, y.first)
-    Ciclo3[contador] = tmp3
-    contador++
-    if (A.size != 0){
-        for (i  in (corte+1) until A.size) {
-            Ciclo3[contador] = A[i]
-            contador++
-        }
-    }
-    return Ciclo3
-}
-
-// Función para obtener los datos a partir del archivo_entrada con formato TSPLIB
+// Algoritmo 0: función para obtener los datos a partir del archivo_entrada con formato TSPLIB
 
 /* Función: obtenerDatosTSP
  * Descripción: Esta función recibe y procesa los datos del archivo de entrada en formato TSPLIB y retorna un arreglo 
@@ -345,7 +89,7 @@ fun obtenerDatosTSP(A: String): Array<Triple<Double,Double,Int>> {
             }         
         }
         /* Se extrae la primera división y la segunda división del string usando substring, y se crea un Triple con esas coordenadas
-         * el número de la ciudad. Esto se guarda en el arreglo C
+         * y el número de la ciudad. Esto se guarda en el arreglo C
          */
         C[j] = Triple((B[k].substring(centinela1, centinela2)).toDouble(), (B[k].substring(centinela2, B[k].length)).toDouble(), j+1)
         j++
@@ -353,48 +97,135 @@ fun obtenerDatosTSP(A: String): Array<Triple<Double,Double,Int>> {
     return C
 }
 
-// Función para convertir el tour solución al formato TSPLIB
+// Algoritmo 1
 
-/* Función: obtenerTourTSPLIB
- * Descripción: Recibe un tour: tour: Array<Pair<Triple<Double,Double,Int>, Triple<Double,Double,Int>>>
- * y retorna un tour de strings que contiene sólo los números de las ciudades del tour original y en orden, 
- * es decir, está en formato TSPLIB
- * Precondición: tour.size >= 1
- * Postondición: \result.size >= 1
- */ 
-fun obtenerTourTSPLIB(tour: Array<Pair<Triple<Double,Double,Int>, Triple<Double,Double,Int>>>): Array<String> {
-	var tourTSPLIB = Array(tour.size, {""})
-	for(i in 0 until tour.size) {
-		tourTSPLIB[i] = ((tour[i].first).third).toString()
-	}
-	return tourTSPLIB
+/* Función: divideAndConquerTSP
+ * Descripción: Recibe de entrada un arreglo de triples P: Array<Triple<Double, Double, Int>> y retorna un arreglo 
+ * de pares de triples Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> con una solución válida del TSP
+ * Precondición: A.size > 0 && 
+ * Postcondición: \result.size == A.size + 1 
+ * && (\forall int i; 0 <= i < \result.size; (\exists int j: 0 <= j < A.size; \result[i] == A[j] )) 
+ */
+fun divideAndConquerTSP(
+    P: Array<Triple<Double, Double, Int>>
+):  Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> {
+    var n = P.size
+    if (n == 1) {
+        return cicloUnaCiudad(P)
+    } else if (n ==2) {
+        return cicloDosCiudades(P)
+    } else if (n == 3) {
+        return cicloTresCiudades(P)
+    } else {
+        var (pIzquierda,pDerecha) = obtenerParticiones(P)
+        if (pIzquierda.size == 0 && pDerecha.size == 0) {
+            var C1: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> = emptyArray()
+            var C2: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> = emptyArray()
+            return combinarCiclos(C1, C2)
+        } else if (pIzquierda.size != 0 && pDerecha.size == 0) {
+            var C1 = divideAndConquerTSP(pIzquierda)
+            var C2: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> = emptyArray()
+            return combinarCiclos(C1, C2)
+        } else if (pIzquierda.size == 0 && pDerecha.size != 0) {
+            var C1: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> = emptyArray()
+            var C2 = divideAndConquerTSP(pDerecha)
+            return combinarCiclos(C1, C2)
+        }
+        var C1 = divideAndConquerTSP(pIzquierda)
+        var C2 = divideAndConquerTSP(pDerecha)
+        return combinarCiclos(C1, C2)
+    }   
 }
 
-// Procedimiento para generar el archivo de salida con la solución del problema TSP, en formato TSPLIB
+// Funciones necesarias para la implementación del algoritmo 1
 
-/* Función: generarArchivoSolucionTSPLIB
- * Descripción: Recibe el nombre del archivo de salida y el tour solución, el cual viene
- * dado por el algoritmo divideAndConquerAndLocalSearchTSP. Este procedimiento genera el archivo de salida con
- * la solución del problema TSP, en formato TSPLIB
- * Precondición: nombreSalida != null && tourSolucion.size >= 2
- * Postondición: true
+/* Función: cicloUnaCiudad
+ * Descripción: De entrada recibe un arreglo de coordenadas de tamaño uno y retorna un arreglo de pares de coordenadas 
+ * de tamaño uno. Este arreglo representa un tour, una solución válida del TSP.
+ * Precondición: A.size == 1  
+ * Postcondición: (\result.size == 1)
+*/
+fun cicloUnaCiudad(
+    A: Array<Triple<Double, Double, Int>>
+):  Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> {
+    var B = arrayOf(Pair(A[0], A[0]))
+    return B
+}
+
+/* Función: cicloDosCiudades
+ * Descripción: De entrada recibe un arreglo de coordenadas de tamaño dos y retorna un arreglo de pares de coordenadas 
+ * de tamaño dos. Este arreglo representa un tour, una solución válida del TSP.
+ * Precondición: A.size == 2 
+ * Postcondición: (\result.size == 2)
+*/
+fun cicloDosCiudades(
+    A: Array<Triple<Double, Double, Int>>
+):  Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> {
+    var B = arrayOf(Pair(A[0], A[1]), Pair(A[1], A[0]))
+    return B
+}
+
+/* Función: cicloTresCiudades
+ * Descripción: De entrada recibe un arreglo de coordenadas de tamaño tres y retorna un arreglo de pares de coordenadas 
+ * de tamaño tres. Este arreglo representa un tour, una solución válida del TSP.
+ * Precondición: A.size == 3  
+ * Postcondición: (\result.size == 3) 
+*/
+fun cicloTresCiudades(
+    A:  Array<Triple<Double, Double, Int>>
+): Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> {
+    var B = arrayOf(Pair(A[0], A[1]), Pair(A[1], A[2]), Pair(A[2], A[0]))
+    return B
+}
+
+// Algoritmo 2
+
+/* Función: obtenerParticiones
+ * Descripción: Recibe un P: Array<Triple<Double,Double,Int>> de coordenadas y retorna un 
+ * Pair< Array<Triple<Double,Double,Int>>, Array<Triple<Double,Double,Int>>> que contiene dos 
+ * particiones entre las cuales se reparten las ciudades dadas en P. 
+ * Este algoritmo cumple el papel de "Divide" en el esquema "Divide-and-Conquer" empleado para 
+ * resolver el TSP
+ * Precondición: P.size >= 1
+ * Postondición: (\result.first).size >= 1 && (\result.second).size >= 1
  */ 
-fun generarArchivoSolucionTSPLIB(nombreSalida: String, tourSolucion: Array<Pair<Triple<Double,Double,Int>, Triple<Double,Double,Int>>>) {
-    var distancia = obtenerDistanciaTour(tourSolucion)
-    var tourTSPLIB = obtenerTourTSPLIB(tourSolucion)
-    var dimensionTSP = tourTSPLIB.size
-    var archivoSalida = File(nombreSalida)
-    var textoSalida = "NAME: "+nombreSalida
-    archivoSalida.writeText(textoSalida)
-    archivoSalida.appendText("\nCOMMENT: Length "+distancia.toString())
-    archivoSalida.appendText("\nTYPE: TOUR")
-    archivoSalida.appendText("\nDIMENSION: ${dimensionTSP}")
-    archivoSalida.appendText("\nTOUR_SECTION")
-    for (i in 0 until tourTSPLIB.size) { 
-        archivoSalida.appendText("\n"+tourTSPLIB[i])
+fun obtenerParticiones(
+    P: Array<Triple<Double,Double,Int>>
+): Pair< Array<Triple<Double,Double,Int>>, Array<Triple<Double,Double,Int>>> {
+    var rectangulo = obtenerRectangulo(P)
+    var (Xdim, Ydim) = obtenerDimensionesRectangulo(rectangulo)
+    var ejeDeCorte: String
+    if(Xdim > Ydim) {
+        ejeDeCorte = "X"
+    } else {
+        ejeDeCorte = "Y"
     }
-    archivoSalida.appendText("\n-1")
-    archivoSalida.appendText("\nEOF")
+    var (Xc, Yc) = obtenerPuntoDeCorte(P, ejeDeCorte)
+    var (rectanguloIzq, rectanguloDer) = aplicarCorte(ejeDeCorte, Pair(Xc, Yc), rectangulo)
+    var particionIzq = obtenerPuntosRectangulo(P, rectanguloIzq)
+    var particionDer = obtenerPuntosRectangulo(P, rectanguloDer)
+    if ((particionIzq.size == 0 && particionDer.size > 3) || (particionDer.size == 0 && particionIzq.size > 3)) {
+        if (ejeDeCorte == "X") {
+            ejeDeCorte = "Y"
+        } else {
+            ejeDeCorte = "X"
+        }
+        Xc = obtenerPuntoDeCorte(P, ejeDeCorte).first
+        Yc = obtenerPuntoDeCorte(P, ejeDeCorte).second
+        rectanguloIzq = aplicarCorte(ejeDeCorte, Pair(Xc, Yc), rectangulo).first
+        rectanguloDer = aplicarCorte(ejeDeCorte, Pair(Xc, Yc), rectangulo).second
+        particionIzq = obtenerPuntosRectangulo(P, rectanguloIzq)
+        particionDer = obtenerPuntosRectangulo(P, rectanguloDer)
+        if ((particionIzq.size == 0 && particionDer.size > 3) || (particionDer.size == 0 && particionIzq.size > 3)) {
+            Xc = obtenerPuntoDeCorteMitad(rectangulo, ejeDeCorte).first
+            Yc = obtenerPuntoDeCorteMitad(rectangulo, ejeDeCorte).second
+            rectanguloIzq = aplicarCorte(ejeDeCorte, Pair(Xc, Yc), rectangulo).first
+            rectanguloDer = aplicarCorte(ejeDeCorte, Pair(Xc, Yc), rectangulo).second
+            particionIzq = obtenerPuntosRectangulo(P, rectanguloIzq)
+            particionDer = obtenerPuntosRectangulo(P, rectanguloDer)
+        }
+    }
+    return Pair(particionIzq, particionDer)
 }
 
 // Funciones necesarias para la implementación del algoritmo 2
@@ -403,7 +234,8 @@ fun generarArchivoSolucionTSPLIB(nombreSalida: String, tourSolucion: Array<Pair<
  * Descripción: Recibe un P: Array<Triple<Double,Double, Int>> de coordenadas y retorna un Double que corresponde al elemento 
  * máximo de las coordenadas X de dicho arreglo.
  * Precondición: P.size >= 1
- * Postondición: (\forall int i: 0 <= i < P.size, \result >= P[i].first) && (\exists int i; 0 <= i && i < P.size; \result == P[i].first)
+ * Postondición: (\forall int i: 0 <= i < P.size, \result >= P[i].first) 
+ * && (\exists int i; 0 <= i && i < P.size; \result == P[i].first)
  */ 
 fun obtenerMaximoCoordenadasX(P: Array<Triple<Double,Double, Int>>): Double {
 	var n = P.size
@@ -420,7 +252,8 @@ fun obtenerMaximoCoordenadasX(P: Array<Triple<Double,Double, Int>>): Double {
  * Descripción: Recibe un P: Array<Triple<Double,Double,Int>> de coordenadas y retorna un Double que corresponde al elemento 
  * mínimo de las coordenadas X de dicho arreglo.
  * Precondición: P.size >= 1
- * Postondición: (\forall int i: 0 <= i < P.size, \result <= P[i].first) && (\exists int i; 0 <= i && i < P.size; \result == P[i].first)
+ * Postondición: (\forall int i: 0 <= i < P.size, \result <= P[i].first) 
+ * && (\exists int i; 0 <= i && i < P.size; \result == P[i].first)
  */ 
 fun obtenerMinimoCoordenadasX(P: Array<Triple<Double,Double,Int>>): Double {
 	var n = P.size
@@ -437,7 +270,8 @@ fun obtenerMinimoCoordenadasX(P: Array<Triple<Double,Double,Int>>): Double {
  * Descripción: Recibe un P: Array<Triple<Double,Double>> de coordenadas y retorna un Double que corresponde al elemento 
  * máximo de las coordenadas Y de dicho arreglo.
  * Precondición: P.size >= 1
- * Postondición: (\forall int i: 0 <= i < P.size, \result >= P[i].second) && (\exists int i; 0 <= i && i < P.size; \result == P[i].second)
+ * Postondición: (\forall int i: 0 <= i < P.size, \result >= P[i].second) 
+ * && (\exists int i; 0 <= i && i < P.size; \result == P[i].second)
  */ 
 fun obtenerMaximoCoordenadasY(P: Array<Triple<Double,Double,Int>>): Double {
 	var n = P.size
@@ -454,7 +288,8 @@ fun obtenerMaximoCoordenadasY(P: Array<Triple<Double,Double,Int>>): Double {
  * Descripción: Recibe un P: Array<Triple<Double,Double,Int>> de coordenadas y retorna un Double que corresponde al elemento 
  * mínimo de las coordenadas Y de dicho arreglo.
  * Precondición: P.size >= 1
- * Postondición: (\forall int i: 0 <= i < P.size, \result <= P[i].second) && (\exists int i; 0 <= i && i < P.size; \result == P[i].second)
+ * Postondición: (\forall int i: 0 <= i < P.size, \result <= P[i].second) 
+ * && (\exists int i; 0 <= i && i < P.size; \result == P[i].second)
  */ 
 fun obtenerMinimoCoordenadasY(P: Array<Triple<Double,Double,Int>>): Double {
 	var n = P.size
@@ -473,7 +308,8 @@ fun obtenerMinimoCoordenadasY(P: Array<Triple<Double,Double,Int>>): Double {
  * Dichas coordenadas se encuentran en el siguiente orden:
  * esquina inferior izquierda, esquina inferior derecha, esquina superior derecha, esquina superior izquierda
  * Precondición: P.size >= 1
- * Postondición: (\forall int i: 0 <= i < P.size, \result[0].first <= P[i].first <= \result[2].first && \result[0].second <= P[i].second <= \result[2].second) 
+ * Postondición: (\forall int i: 0 <= i < P.size, \result[0].first <= P[i].first <= \result[2].first 
+ * && \result[0].second <= P[i].second <= \result[2].second) 
  */ 
 fun obtenerRectangulo(P: Array<Triple<Double,Double,Int>>): Array<Pair<Double,Double>> {
 	var minimoX = obtenerMinimoCoordenadasX(P)
@@ -519,7 +355,8 @@ fun swap (P: Array<Triple<Double,Double,Int>>, i: Int, j: Int) {
  * Este procedimiento ordena los elementos de P de acuerdo a las coordenadas especificadas por el String coordenada, 
  * utilizando el algoritmo quicksort clásico
  * Precondición: true
- * Postondición: (\forall int i; 0 <= i && i < P.size-1; P[i].first <= P[i+1].first) || (\forall int i; 0 <= i && i < P.size-1; P[i].second <= P[i+1].second)
+ * Postondición: (\forall int i; p <= i && i <= r; P[i].first <= P[i+1].first) 
+ * || (\forall int i; p <= i && i <= r; P[i].second <= P[i+1].second)
  */ 
 fun quicksortTSP(P: Array<Triple<Double,Double,Int>>, p: Int, r: Int, coordenada: String) {
 	if (p < r) {
@@ -541,7 +378,8 @@ fun quicksortTSP(P: Array<Triple<Double,Double,Int>>, p: Int, r: Int, coordenada
  * tal que las coordenadas X de los elementos del subarreglo P[p...q-1] sean menores que P[q].first y las coordenadas X 
  * de los elementos del subarreglo P[q+1...r] sean mayores que P[q].first. La función retorna q: Int.
  * Precondición: 0 <= p < r < P.size
- * Postondición: p <= q <= r && (\forall int i; p <= i && i < q; P[i].first <= P[q].first) && (\forall int i; q+1 <= i && i <= r; P[i].first => P[q].first)
+ * Postondición: p <= q <= r && (\forall int i; p <= i && i < q; P[i].first <= P[q].first) 
+ * && (\forall int i; q+1 <= i && i <= r; P[i].first => P[q].first)
  */  
 fun particionCoordenadaX(P: Array<Triple<Double,Double,Int>>, p: Int, r: Int): Int {
     var k = (p..r).random()
@@ -564,7 +402,8 @@ fun particionCoordenadaX(P: Array<Triple<Double,Double,Int>>, p: Int, r: Int): I
  * tal que las coordenadas Y de los elementos del subarreglo P[p...q-1] sean menores que P[q].second y las coordenadas Y
  * de los elementos del subarreglo P[q+1...r] sean mayores que P[q].second. La función retorna q: Int.
  * Precondición: 0 <= p < r < P.size
- * Postondición: p <= q <= r && (\forall int i; p <= i && i < q; P[i].second <= P[q].second) && (\forall int i; q+1 <= i && i <= r; P[i].second => P[q].second)
+ * Postondición: p <= q <= r && (\forall int i; p <= i && i < q; P[i].second <= P[q].second) 
+ * && (\forall int i; q+1 <= i && i <= r; P[i].second => P[q].second)
  */  
 fun particionCoordenadaY(P: Array<Triple<Double,Double,Int>>, p: Int, r: Int): Int {
 	var k = (p..r).random()
@@ -664,10 +503,14 @@ fun obtenerPuntoDeCorte(P: Array<Triple<Double,Double,Int>>, ejeDeCorte: String)
  * Los datos del rectángulo vienen dados en un Pair(a,b), donde a == 1.0 si es el rectángulo izquierdo (o inferior) y 0.0 en caso 
  * contrario, y b = 2.0 si el eje de corte es X y 3.0 en caso contrario. 
  * Precondición: rectangulo.size >= 1
- * Precondición: rectangulo[0].first <= puntoDeCorte.first <= rectangulo[2].first && rectangulo[0].second <= puntoDeCorte.second <= rectangulo[2].second)
- * Postondición: (\result.first).size == 4 && (\result.second).size == 4
+ * Precondición: rectangulo[0].first <= puntoDeCorte.first <= rectangulo[2].first 
+ * && rectangulo[0].second <= puntoDeCorte.second <= rectangulo[2].second)
+ * Postondición: (\result.first).size == 5 && (\result.second).size == 5
  */ 
-fun aplicarCorte(ejeDeCorte: String, puntoDeCorte: Pair<Double,Double>, rectangulo: Array<Pair<Double,Double>>): Pair<Array<Pair<Double,Double>>, Array<Pair<Double,Double>>> {
+fun aplicarCorte(ejeDeCorte: String, 
+    puntoDeCorte: Pair<Double,Double>, 
+    rectangulo: Array<Pair<Double,Double>>
+): Pair<Array<Pair<Double,Double>>, Array<Pair<Double,Double>>> {
 	if (ejeDeCorte == "X" || ejeDeCorte == "x") {
 		var coordenadasIzq00 = rectangulo[0]
 		var coordenadasIzq10 = Pair(puntoDeCorte.first,rectangulo[0].second)
@@ -709,7 +552,9 @@ fun aplicarCorte(ejeDeCorte: String, puntoDeCorte: Pair<Double,Double>, rectangu
  * Precondición: P.size >= 1
  * Postondición: \result.size >= 0
  */ 
-fun obtenerPuntosPrimerRectangulo(P: Array<Triple<Double,Double,Int>>, rectangulo: Array<Pair<Double,Double>>): Array<Triple<Double,Double,Int>> {
+fun obtenerPuntosPrimerRectangulo(P: Array<Triple<Double,Double,Int>>, 
+    rectangulo: Array<Pair<Double,Double>>
+): Array<Triple<Double,Double,Int>> {
 	var n = P.size
 	var k = 0
 	var tmp = Array(n, {0})
@@ -742,7 +587,9 @@ fun obtenerPuntosPrimerRectangulo(P: Array<Triple<Double,Double,Int>>, rectangul
  * Precondición: P.size >= 1
  * Postondición: \result.size >= 0
  */ 
-fun obtenerPuntosSegundoRectangulo(P: Array<Triple<Double,Double,Int>>, rectangulo: Array<Pair<Double,Double>>) : Array<Triple<Double,Double,Int>> {
+fun obtenerPuntosSegundoRectangulo(P: Array<Triple<Double,Double,Int>>, 
+    rectangulo: Array<Pair<Double,Double>>
+) : Array<Triple<Double,Double,Int>> {
 	var n = P.size
     var k = 0
     var tmp = Array(n, {0})
@@ -788,7 +635,9 @@ fun obtenerPuntosSegundoRectangulo(P: Array<Triple<Double,Double,Int>>, rectangu
  * Precondición: P.size >= 1
  * Postondición: 0 <= \result.size <= P.size
  */ 
-fun obtenerPuntosRectangulo(P: Array<Triple<Double,Double,Int>>, rectangulo: Array<Pair<Double,Double>>): Array<Triple<Double,Double,Int>>{
+fun obtenerPuntosRectangulo(P: Array<Triple<Double,Double,Int>>, 
+    rectangulo: Array<Pair<Double,Double>>
+): Array<Triple<Double,Double,Int>>{
 	if (rectangulo[4].first.compareTo(1.0) == 0) {
         return obtenerPuntosPrimerRectangulo(P,rectangulo)
     } else {
@@ -817,53 +666,271 @@ fun obtenerPuntoDeCorteMitad(rectangulo: Array<Pair<Double,Double>>, eje: String
 	}
 }
 
-// Algoritmo 2
+// Algoritmo 3
 
-/* Función: obtenerParticiones
- * Descripción: Recibe un P: Array<Triple<Double,Double,Int>> de coordenadas y retorna un 
- * Pair< Array<Triple<Double,Double,Int>>, Array<Triple<Double,Double,Int>>> que contiene dos particiones entre las cuales se reparten
- * las ciudades dadas en P. Este algoritmo cumple el papel de "Divide" en el esquema "Divide-and-Conquer" empleado para 
- * resolver el TSP
- * Precondición: P.size >= 1
- * Postondición: (\result.first).size >= 1 && (\result.second).size >= 1
- */ 
-fun obtenerParticiones(P: Array<Triple<Double,Double,Int>>): Pair< Array<Triple<Double,Double,Int>>, Array<Triple<Double,Double,Int>>> {
-	var rectangulo = obtenerRectangulo(P)
-	var (Xdim, Ydim) = obtenerDimensionesRectangulo(rectangulo)
-	var ejeDeCorte: String
-	if(Xdim > Ydim) {
-		ejeDeCorte = "X"
-	} else {
-		ejeDeCorte = "Y"
-	}
-	var (Xc, Yc) = obtenerPuntoDeCorte(P, ejeDeCorte)
-	var (rectanguloIzq, rectanguloDer) = aplicarCorte(ejeDeCorte, Pair(Xc, Yc), rectangulo)
-	var particionIzq = obtenerPuntosRectangulo(P, rectanguloIzq)
-	var particionDer = obtenerPuntosRectangulo(P, rectanguloDer)
-	if ((particionIzq.size == 0 && particionDer.size > 3) || (particionDer.size == 0 && particionIzq.size > 3)) {
-		if (ejeDeCorte == "X") {
-			ejeDeCorte = "Y"
-		} else {
-			ejeDeCorte = "X"
-		}
-		Xc = obtenerPuntoDeCorte(P, ejeDeCorte).first
-		Yc = obtenerPuntoDeCorte(P, ejeDeCorte).second
-		rectanguloIzq = aplicarCorte(ejeDeCorte, Pair(Xc, Yc), rectangulo).first
-		rectanguloDer = aplicarCorte(ejeDeCorte, Pair(Xc, Yc), rectangulo).second
-		particionIzq = obtenerPuntosRectangulo(P, rectanguloIzq)
-		particionDer = obtenerPuntosRectangulo(P, rectanguloDer)
-		if ((particionIzq.size == 0 && particionDer.size > 3) || (particionDer.size == 0 && particionIzq.size > 3)) {
-			Xc = obtenerPuntoDeCorteMitad(rectangulo, ejeDeCorte).first
-			Yc = obtenerPuntoDeCorteMitad(rectangulo, ejeDeCorte).second
-			rectanguloIzq = aplicarCorte(ejeDeCorte, Pair(Xc, Yc), rectangulo).first
-			rectanguloDer = aplicarCorte(ejeDeCorte, Pair(Xc, Yc), rectangulo).second
-			particionIzq = obtenerPuntosRectangulo(P, rectanguloIzq)
-			particionDer = obtenerPuntosRectangulo(P, rectanguloDer)
-		}
-	}
-	return Pair(particionIzq, particionDer)
+/* Función: combinarCiclos
+ * Descripción: Recibe como entreda dos arreglos que contienen las coordenadas de las ciudades(Array<Pair<Double,Double>>). 
+ * La funcion busca unir ambos arreglos(cada arreglo es una solucion, es decir, un tour) para contruir uno nuevo,
+ * este elemento de salida debe cumple dos requisitos, tener la distancia mas corta a recorrer todas las ciudades y cumplir las especificaciones de un tour. 
+ * Precondición: A.size >= 0  && B.size >= 0  
+ * Postcondición: (\result.size == (A.size + B.size -1 )) && 
+ * (\forall int i; 0 <= i < \result.size; (\exists int j: 0 <= j < A.size; \result[i] == A[j] ) || (\exists int j: 0 <= j < B.size; \result[i] == B[j] )) 
+*/
+fun combinarCiclos(A: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>>, B: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>>): 
+    Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> {
+    if (A.size == 0) {
+        return B
+    }
+    if (B.size == 0) {
+        return A
+    }
+    var minG = Int.MAX_VALUE;
+    var newC1: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>> = Pair(Triple(-2.0, -2.0, 0), Triple(-2.0, -2.0, 0))
+    var newC2: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>> = Pair(Triple(-2.0, -2.0, 0), Triple(-2.0, -2.0, 0))
+    var dC1: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>> = Pair(Triple(-2.0, -2.0, 0), Triple(-2.0, -2.0, 0))
+    var dC2: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>> = Pair(Triple(-2.0, -2.0, 0), Triple(-2.0, -2.0, 0))
+    var caso1 = true
+    var posicionB = -1 
+    for (i in 0 until A.size-1) {
+        var lado1 = A[i]
+        var a = lado1.first
+        var b = lado1.second
+        var dOLD1 = distancia(a,b)
+        for (j in 0 until B.size-1) {
+            var lado2 = B[j]
+            var c = lado2.first
+            var d = lado2.second
+            var dOLD2 = distancia(c,d)
+            var dNEW1 = distancia(a,c)
+            var dNEW2 = distancia(b,d)
+            var dNEW3 = distancia(a,d)
+            var dNEW4 = distancia(b,c)
+            var g1 = distanciaGanada(dOLD1, dOLD2, dNEW1, dNEW2)
+            var g2 = distanciaGanada(dOLD1, dOLD2, dNEW3, dNEW4)
+            var ganancia = min(g1, g2)
+            if (ganancia < minG) {
+                minG = ganancia
+                posicionB = j 
+                if (g1 < g2) {
+                    // Agregar lados
+                    newC1 = Pair(a, c)
+                    // Agregar lados
+                    newC2 = Pair(b, d)
+                    caso1 = true
+                } else {
+                    // Agregar lados
+                    newC1 = Pair(a, d)
+                    // Agregar lados
+                    newC2 = Pair(b, c)
+                    caso1 = false
+                }
+                // Eliminar lados
+                dC1 = Pair (a, b)
+                // Eliminar lados
+                dC2 = Pair(c, d)
+            }
+        }
+    }
+    // Eliminar lados
+    var particion1 = remover(A, dC1)
+    var particion2 = remover(B, dC2)
+    // Agregar lados y unir
+    var Ciclo3 = tour(particion1, particion2, newC1, newC2, caso1, posicionB)
+    return Ciclo3
 }
 
+// Funciones auxiliares para la implementación del algoritmo 3
+
+/* Función: distancia
+ * Descripción: Recibe como entrada dos Pares que contienen las coordenadas de X y Y de las ciudades(Pair<Double, Double>).
+ * La funcion se encarga de sacar las distancia que hay entre una ciudad y otra. Cada ciudad es un par, en donde el primer elemento del par 
+ * represneta la coordenada X y el segundo elemento su coordenada en Y.
+ * Precondición: true  
+ * Postcondición: \result == Math.sqrt((b.first - a.first)*(b.first - a.first) + (b.second - a.second)*(b.second - a.second))
+ * 
+*/
+fun distancia(a: Triple<Double, Double, Int> , b: Triple<Double, Double, Int>): Int {
+    var xd: Double = b.first - a.first
+    var yd: Double = b.second - a.second 
+    var dxy = Math.sqrt(xd*xd+yd*yd).roundToInt()
+    return dxy
+}
+
+/* Función: distanciaGanada
+ * Descripción: Recibe como entreda 4 enteros(Int), cada uno de ellos es una distancia de entre dos ciudades.
+ * El primer entero(dOLD1) es la distancia entre dos ciudades que se encuentran en la particion por la izquierda.
+ * El segundo entero(dOLD2) es la distancia entre dos ciudades que se encuentran en la particion por la derecha.
+ * El tercer y cuarto(dNEW1 y dNEW2) entero son las nuevas distancias entre una ciudad de la particion izquierda y una de la derecha.
+ * La funcion devulve la distancia ganada entre (dOLD1, dOLD2) y (dNEW1, dNEW2).
+ * La funcion busca unir ambos arreglos(cada arreglo es una solucion, es decir, un tour) para contruir uno nuevo,
+ * este elemento de salida debe cumple dos requisitos, tener la distancia mas corta a recorrer todas las ciudades y cumplir las especificaciones de un tour. 
+ * Precondición: dOLD1 > 0 && dOLD2 > 0  && dNEW1 > 0 && dNEW2 > 0
+ * Postcondición: \result == (dNEW1 + dNEW2) - (dOLD1 + dOLD2)
+*/
+fun distanciaGanada(dOLD1: Int, dOLD2: Int, dNEW1: Int, dNEW2: Int): Int {
+    return (dNEW1 + dNEW2) - (dOLD1 + dOLD2)
+}
+
+/* Función: remover
+ * Descripción: Recibe como entrada un arreglo de pares(Array<Pair<Double, Double>>) que es una de las particiones del algoritmo combinarCiclos,
+ * tambien ingresa un par que contiene dos ciudades(Pair<Pair<Double, Double>, Pair<Double, Double>>).
+ * La funcion revisara cada elemento del arreglo A, si algun elemento coincide con un alguna de las ciudades del par X
+ * este procede a eliminar ese par y continua con la revision.
+ * Al final nos retornara un arreglo que posee todos los elementos de A exceptuando las dos ciudades del par X.
+ * Precondición: A.size >= 3 && (\exists int i: 0 <= i < A.size; x.first == A[i] ||  x.second == A[i]) 
+ * Postcondición: (\forall int i: 0 <= i < \result.size; x.first != A[i] ||  x.second != A[i]) 
+ * 
+*/
+fun remover(A: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>>, x: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>): Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> {
+    if (x == Pair(Triple(-2.0,-2.0,0),Triple(-2.0,-2.0,0))) {
+        return A
+    }else if (A.size == 1) {
+        var B = Array(0){Pair(Triple(0.0,0.0, 0), Triple(0.0,0.0, 0))}
+        return B
+    } else if (A.size == 2) {
+        var B = Array(1){Pair(Triple(-3.0,-3.0, 0), Triple(-3.0,-3.0, 0))}
+        B[0] = A[1]
+        return B
+    } else {
+        var B = Array((A.size-1)){Pair(Triple(-3.0,-3.0, 0), Triple(-3.0,-3.0, 0))}
+        var j =0
+        for(i in 0 until A.size) {
+            var lado = A[i]
+            var ciudad1 = lado.first
+            var ciudad2 = lado.second
+            if ((ciudad1 == x.first || ciudad1 == x.second) && (ciudad2 == x.first || ciudad2 == x.second)) {
+                continue
+            } else {
+                B[j] = lado
+                j++ 
+            }
+        }
+
+        return B
+    }  
+}
+
+/* Función: tour
+ * Descripción: Recibe dos arreglos (Array<Pair<Double, Double>>) A y B que ya pasaron por la funcion remover.
+ * Estos arreglos contienen todas las ciudades exceptuando las ciudades que se debian remover para colocar los nuevos pares o conexiones. 
+ * Dos pares que se reciben como entrada y cada uno contine dos ciudades, que trazan el nuevo camino que debe tomar la persona para formar un tour con A y B.
+ * La funcion busca crear un nuevo arreglo, que contiene los elementos de A y B, ademas que intregra en ese arreglo las ciudades que estan dentro de los pares. 
+ * Precondición: A.size > 0 && B.size > 0 && \result.size == (A.size + B.size + 5)
+ * && (\forall int i: 0 <= i < A.size; x.first != A[i] &&  x.second != A[i]) && (\forall int j: 0 <= j < B.size; y.first != A[i] &&  y.second != A[i]) 
+ * Postcondición: (\forall int i: 0 <= i < \result.size; x.first != A[i] ||  x.second != A[i]) 
+ * 
+*/
+fun tour(A: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>>, B: Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>>, 
+x: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>, y: Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>, caso1: Boolean, posicionB: Int): Array<Pair<Triple<Double, Double, Int>, Triple<Double, Double, Int>>> {
+    var cantidad = 0
+    var xCheck: Boolean
+    var yCheck: Boolean
+    if (x == Pair(Triple(0.0,0.0,0),Triple(0.0,0.0,0)) && y == Pair(Triple(0.0,0.0,0),Triple(0.0,0.0,0)) ) {
+        xCheck = true
+        yCheck = true   
+    } else if (x != Pair(Triple(0.0,0.0,0),Triple(0.0,0.0,0)) && y == Pair(Triple(0.0,0.0,0),Triple(0.0,0.0,0)) ) {
+        cantidad = 1
+        xCheck = false
+        yCheck = true
+    } else if (x == Pair(Triple(0.0,0.0,0),Triple(0.0,0.0,0)) && y != Pair(Triple(0.0,0.0,0),Triple(0.0,0.0,0))) {
+        cantidad = 1
+        xCheck = true
+        yCheck = false
+    } else {
+        cantidad = 2
+        xCheck = false
+        yCheck = false
+    }
+    var Ciclo3 = Array(A.size+B.size+cantidad){Pair(Triple(0.0,0.0, 0), Triple(0.0,0.0, 0))}
+    var contador = 0
+    var corte = 0
+    println("tamaño A= ${A.size}")
+    println("tamaño B= ${B.size}")
+    println("posicion B= ${posicionB}")
+    if (A.size != 0) {
+        for (i in 0 until A.size) {
+            if (A[i].second == x.first) {
+                Ciclo3[contador] = A[i]
+                contador++
+                break
+            } else {
+                Ciclo3[contador] = A[i]
+                contador++
+                corte++
+            }
+        }
+    }
+    if (xCheck == false) {
+        Ciclo3[contador] = x
+        contador ++
+    }
+    if (B.size != 0 && posicionB != -1) {
+        if (caso1 == true) {
+            for (i in posicionB-1 downTo 0) {
+                var tmp1 = Pair(B[i].second, B[i].first)
+                Ciclo3[contador] = tmp1
+                contador++
+            }
+            for (i in B.size-1 downTo posicionB) {
+                var tmp2 = Pair(B[i].second, B[i].first)
+                Ciclo3[contador] = tmp2
+                contador++
+            }
+        } else {
+            for (i in posicionB until B.size) {
+                Ciclo3[contador] = B[i]
+                contador++
+            }
+            for (i in 0 until posicionB){
+                Ciclo3[contador] = B[i]
+                contador++
+            }
+        }
+    } 
+    if (posicionB == -1) {
+        for (i in 0 until B.size){
+            Ciclo3[contador] = B[i]
+            contador++
+        }
+    }
+    if (yCheck == false) {
+        var tmp3 = Pair(y.second, y.first)
+        Ciclo3[contador] = tmp3
+        contador++
+    }
+    
+    if (A.size != 0){
+        for (i  in (corte+1) until A.size) {
+            Ciclo3[contador] = A[i]
+            contador++
+        }
+    }
+    return Ciclo3
+}
+
+// Algoritmo 4
+
+/* Función: divideAndConquerAndLocalSearchTSP
+ * Descripción: Recibe un arreglo P: Array<Triple<Double,Double,Int>> con coordenadas de ciudades y retorna un 
+ * tour: Array<Pair<Triple<Double,Double,Int>, Triple<Double,Double,Int>>> que resuelve el problema del TSP para dicho arreglo. 
+ * La función divideAndConquerAndLocalSearchTSP resuelve el problema por medio de la técnica de Divide-And-Conquer 
+ * y luego lo mejora empleando el algoritmo 2-opt
+ * Precondición: P.size >= 1
+ * Postondición: \result.size >= 2 && \result[0] == \result[\result.size-1]
+ */ 
+fun divideAndConquerAndLocalSearchTSP(
+    P: Array<Triple<Double,Double,Int>>
+) : Array<Pair<Triple<Double,Double,Int>, Triple<Double,Double,Int>>> {
+    var c1 = divideAndConquerTSP(P)
+    var distancia1 = obtenerDistanciaTour(c1)
+    println("La distancia del tour obtenido por el algoritmo de Divide-And-Conquer es ${distancia1}")
+    println(" ")
+    var c2 = busquedaLocalCon2OPT(c1)
+    var distancia2OPT = obtenerDistanciaTour(c2)
+    println("La distancia del tour obtenido como solución final es ${distancia2OPT}")
+    println(" ")
+    return c2
+}
 
 // Funciones necesarias para la implementación del algoritmo 4
 
@@ -871,7 +938,8 @@ fun obtenerParticiones(P: Array<Triple<Double,Double,Int>>): Pair< Array<Triple<
  * Descripción: Recibe dos coordenadas de puntos y retorna la distancia euclidiana entre dichos puntos, redondeada a un entero
  * Las coordenadas x,y de los puntos corresponden a las dos primeras coordendas de un triple
  * Precondición: true
- * Postondición: \result == (sqrt((Punto2.first - Punto1.first)*(Punto2.first - Punto1.first) + (Punto2.second - Punto1.second)*(Punto2.second - Punto1.second))).roundToInt()
+ * Postondición: \result == (sqrt((Punto2.first - Punto1.first)*(Punto2.first - Punto1.first) 
+ * + (Punto2.second - Punto1.second)*(Punto2.second - Punto1.second))).roundToInt()
  */ 
 fun distanciaDosPuntos(Punto1: Triple<Double,Double,Int>, Punto2: Triple<Double,Double,Int>): Int {
 	var xd = Punto2.first - Punto1.first
@@ -922,7 +990,12 @@ fun invertirTour(tour: Array<Pair<Triple<Double,Double,Int>, Triple<Double,Doubl
  * Precondición: 0 <= p <= q < tour.size
  * Postondición: tour[p].second == \old(tour[q].first) && tour[q].first == \old(tour[p].second) 
  */ 
-fun swap2OPT(tour: Array<Pair<Triple<Double,Double,Int>, Triple<Double,Double,Int>>>, p: Int, q: Int): Array<Pair<Triple<Double,Double,Int>, Triple<Double,Double,Int>>> {
+fun swap2OPT(
+    tour: Array<Pair<Triple<Double,Double,Int>, 
+    Triple<Double,Double,Int>>>, 
+    p: Int, 
+    q: Int
+): Array<Pair<Triple<Double,Double,Int>, Triple<Double,Double,Int>>> {
 	var tmp1 = Pair(tour[p].first, tour[q].first)
 	var tmp2 = Pair(tour[p].second, tour[q].second)
 	tour[p] = tmp1
@@ -953,7 +1026,10 @@ fun cambioDistanciaTour(tour: Array<Pair<Triple<Double,Double,Int>, Triple<Doubl
  * Precondición: tour.size >= 1
  * Postondición: \result.size >= 1
  */ 
-fun busquedaLocalCon2OPT(tour: Array<Pair<Triple<Double,Double,Int>, Triple<Double,Double,Int>>>) : Array<Pair<Triple<Double,Double,Int>, Triple<Double,Double,Int>>> {
+fun busquedaLocalCon2OPT(
+    tour: Array<Pair<Triple<Double,Double,Int>, 
+    Triple<Double,Double,Int>>>
+) : Array<Pair<Triple<Double,Double,Int>, Triple<Double,Double,Int>>> {
 	var tourActual = tour
 	var n = tourActual.size
 	for (i in 1 until n-1) {
@@ -967,24 +1043,51 @@ fun busquedaLocalCon2OPT(tour: Array<Pair<Triple<Double,Double,Int>, Triple<Doub
 	return tourActual
 }
 
-// Algoritmo 4
+// Algoritmo 5: Procedimiento para generar el archivo de salida con la solución del problema TSP, en formato TSPLIB
 
-/* Función: divideAndConquerAndLocalSearchTSP
- * Descripción: Recibe un arreglo P: Array<Triple<Double,Double,Int>> con coordenadas de ciudades y retorna un 
- * tour: Array<Triple<Double,Double,Int>> que resuelve el problema del TSP para dicho arreglo. 
- * La función divideAndConquerAndLocalSearchTSP resuelve el problema por medio de la técnica de Divide-And-Conquer 
- * y luego lo mejora empleando el algoritmo 2-opt
- * Precondición: P.size >= 1
- * Postondición: \result.size >= 2 && \result[0] == \result[\result.size-1]
+/* Función: generarArchivoSolucionTSPLIB
+ * Descripción: Recibe el nombre del archivo de salida y el tour solución, el cual viene
+ * dado por el algoritmo divideAndConquerAndLocalSearchTSP. Este procedimiento genera el archivo de salida con
+ * la solución del problema TSP, en formato TSPLIB
+ * Precondición: nombreSalida != null && tourSolucion.size >= 2
+ * Postondición: true
  */ 
-fun divideAndConquerAndLocalSearchTSP(P: Array<Triple<Double,Double,Int>>) : Array<Pair<Triple<Double,Double,Int>, Triple<Double,Double,Int>>> {
-	var c1 = divideAndConquerTSP(P)
-	var distancia1 = obtenerDistanciaTour(c1)
-	println("La distancia del tour obtenido por el algoritmo de Divide-And-Conquer es ${distancia1}")
-    println(" ")
-	var c2 = busquedaLocalCon2OPT(c1)
-	var distancia2OPT = obtenerDistanciaTour(c2)
-	println("La distancia del tour obtenido como solución final es ${distancia2OPT}")
-    println(" ")
-	return c2
+fun generarArchivoSolucionTSPLIB(
+    nombreSalida: String, 
+    tourSolucion: Array<Pair<Triple<Double,Double,Int>, 
+    Triple<Double,Double,Int>>>
+) {
+    var distancia = obtenerDistanciaTour(tourSolucion)
+    var tourTSPLIB = obtenerTourTSPLIB(tourSolucion)
+    var dimensionTSP = tourTSPLIB.size
+    var archivoSalida = File(nombreSalida)
+    var textoSalida = "NAME: "+nombreSalida
+    archivoSalida.writeText(textoSalida)
+    archivoSalida.appendText("\nCOMMENT: Length "+distancia.toString())
+    archivoSalida.appendText("\nTYPE: TOUR")
+    archivoSalida.appendText("\nDIMENSION: ${dimensionTSP}")
+    archivoSalida.appendText("\nTOUR_SECTION")
+    for (i in 0 until tourTSPLIB.size) { 
+        archivoSalida.appendText("\n"+tourTSPLIB[i])
+    }
+    archivoSalida.appendText("\n-1")
+    archivoSalida.appendText("\nEOF")
 }
+
+// Función para convertir el tour solución al formato TSPLIB
+
+/* Función: obtenerTourTSPLIB
+ * Descripción: Recibe un tour: tour: Array<Pair<Triple<Double,Double,Int>, Triple<Double,Double,Int>>>
+ * y retorna un tour de strings que contiene sólo los números de las ciudades del tour original y en orden, 
+ * es decir, está en formato TSPLIB
+ * Precondición: tour.size >= 1
+ * Postondición: \result.size >= 1
+ */ 
+fun obtenerTourTSPLIB(tour: Array<Pair<Triple<Double,Double,Int>, Triple<Double,Double,Int>>>): Array<String> {
+    var tourTSPLIB = Array(tour.size, {""})
+    for(i in 0 until tour.size) {
+        tourTSPLIB[i] = ((tour[i].first).third).toString()
+    }
+    return tourTSPLIB
+}
+
